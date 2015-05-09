@@ -1,7 +1,7 @@
 package geo
 
+import java.awt.Graphics
 import java.awt.event._
-import java.awt.{Graphics, Point}
 import javax.swing.{AbstractAction, JPanel, KeyStroke}
 
 import geo.domain.GPoint
@@ -24,6 +24,7 @@ class GeoPanel extends JPanel {
 	})
 
 	val im = getInputMap
+
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), KeyEvent.VK_W)
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), KeyEvent.VK_A)
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), KeyEvent.VK_S)
@@ -31,30 +32,19 @@ class GeoPanel extends JPanel {
 
 	val am = getActionMap
 
-	am.put(KeyEvent.VK_W, new AbstractAction() {
-		override def actionPerformed(e: ActionEvent): Unit = {
-			position += new Point(0, -5)
-			repaint()
-		}
-	})
-	am.put(KeyEvent.VK_A, new AbstractAction() {
-		override def actionPerformed(e: ActionEvent): Unit = {
-			position += new Point(-5, 0)
-			repaint()
-		}
-	})
-	am.put(KeyEvent.VK_S, new AbstractAction() {
-		override def actionPerformed(e: ActionEvent): Unit = {
-			position += new Point(0, 5)
-			repaint()
-		}
-	})
-	am.put(KeyEvent.VK_D, new AbstractAction() {
-		override def actionPerformed(e: ActionEvent): Unit = {
-			position += new Point(5, 0)
-			repaint()
-		}
-	})
+	addAction(KeyEvent.VK_W, () => position +=(0, -5))
+	addAction(KeyEvent.VK_A, () => position +=(-5, 0))
+	addAction(KeyEvent.VK_S, () => position +=(0, 5))
+	addAction(KeyEvent.VK_D, () => position +=(5, 0))
+
+	def addAction(key: Int, action: () => Unit): Unit = {
+		am.put(key, new AbstractAction() {
+			override def actionPerformed(e: ActionEvent): Unit = {
+				action()
+				repaint()
+			}
+		})
+	}
 
 	override def paintComponent(g: Graphics): Unit = {
 		super.paintComponent(g)

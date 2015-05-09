@@ -9,7 +9,7 @@ class GPoint(_x: Int, _y: Int) extends Point(_x, _y) {
 
 	def this(p: Point) = this(p.x, p.y)
 
-	def +(point: Point) = {
-		new GPoint(x + point.x, y + point.y)
+	def +(p: (Int, Int)) = {
+		new GPoint(x + p._1, y + p._2)
 	}
 }
