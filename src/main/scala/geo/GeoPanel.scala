@@ -44,6 +44,6 @@ class GeoPanel extends JPanel {
 	am.put(KeyEvent.VK_D, () => position += (5, 0))
 
 	implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
-		override def actionPerformed(e: ActionEvent): Unit = { f(); repaint()}
+		override def actionPerformed(e: ActionEvent): Unit = f()
 	}
 }
