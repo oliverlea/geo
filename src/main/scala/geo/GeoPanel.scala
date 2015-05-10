@@ -46,9 +46,7 @@ class GeoPanel extends JPanel {
 	am.put(KeyEvent.VK_D, () => cube.move(Movement.RIGHT))
 
 	implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
-		override def actionPerformed(e: ActionEvent): Unit = {
-			f()
-			repaint()
-		}
+		override def actionPerformed(e: ActionEvent): Unit = f()
+
 	}
 }
