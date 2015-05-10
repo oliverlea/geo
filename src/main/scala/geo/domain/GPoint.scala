@@ -14,15 +14,15 @@ class GPoint(val x: Double, val y: Double) {
 		new GPoint(x + p._1, y + p._2)
 	}
 
-	def +(m: Momentum) = {
-		new GPoint(x + m.dx, y + m.dy)
+	def +(a: Acceleration) = {
+		new GPoint(x + a.dx, y + a.dy)
 	}
 
 	def -(p: (Double, Double)) = {
 		new GPoint(x - p._1, y - p._2)
 	}
 
-	def -(m: Momentum) = {
-		new GPoint(x - m.dx, y - m.dy)
+	def -(a: Acceleration) = {
+		new GPoint(x - a.dx, y - a.dy)
 	}
 }

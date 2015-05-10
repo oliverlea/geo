@@ -5,8 +5,6 @@ import java.awt.Graphics
 /**
  * @author Oliver Lea
  */
-trait VisibleEntity extends Positionable {
-
-  def tick(): Unit
+trait VisibleEntity extends Entity with Positionable {
   def render(g: Graphics): Unit
 }

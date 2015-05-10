@@ -1,12 +1,12 @@
 package geo.domain
 
-import java.awt.{Point, Graphics}
-import java.awt.event.{MouseEvent, MouseAdapter, ActionEvent, KeyEvent}
-import javax.swing.{AbstractAction, Action, ActionMap}
+import java.awt.event.{ActionEvent, KeyEvent, MouseAdapter, MouseEvent}
+import java.awt.{Graphics, Point}
+import javax.swing.{AbstractAction, Action}
 
 import geo.GeoPanel
-import geo.domain.Movement.Movement
-import geo.domain.Square.{MOMENTUM_LENGTH, MAX_SPEED}
+import geo.domain.Direction.Movement
+import geo.domain.Square.{MAX_SPEED, TICKS_TILL_SLOW_DOWN}
 
 /**
  * @author Paulius Imbrasas
@@ -14,10 +14,12 @@ import geo.domain.Square.{MOMENTUM_LENGTH, MAX_SPEED}
  */
 class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEntity {
 
-	gp.am.put(KeyEvent.VK_W, () => move(Movement.UP))
-	gp.am.put(KeyEvent.VK_A, () => move(Movement.LEFT))
-	gp.am.put(KeyEvent.VK_S, () => move(Movement.DOWN))
-	gp.am.put(KeyEvent.VK_D, () => move(Movement.RIGHT))
+	// Constructor
+
+	gp.am.put(KeyEvent.VK_W, () => move(Direction.UP))
+	gp.am.put(KeyEvent.VK_A, () => move(Direction.LEFT))
+	gp.am.put(KeyEvent.VK_S, () => move(Direction.DOWN))
+	gp.am.put(KeyEvent.VK_D, () => move(Direction.RIGHT))
 
 	implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
 		override def actionPerformed(e: ActionEvent): Unit = {
@@ -37,64 +39,57 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 		position = new GPoint(newPoint)
 	}
 
-	private val momentum = new Momentum(0, 0)
+	private var acceleration = new Acceleration(0, 0)
 
-	private var ticks = 0
+	private var ticks: Double = 0
 
-	override def tick(): Unit = {
-		if (momentum.exists) {
-			ticks += 1
-			if (ticks == MOMENTUM_LENGTH) {
-				reduceMomentum()
-				ticks = 0
+	override def tick(delta: Double): Unit = {
+		if (!acceleration.stationary) {
+			ticks += delta
+			if (ticks >= TICKS_TILL_SLOW_DOWN) {
+				reduceAcceleration(delta)
+				if (acceleration.stationary)
+					ticks = 0
 			}
 		}
-		position += momentum
+		position += (acceleration * delta)
 	}
 
 	override def render(g: Graphics): Unit = {
-		g.drawRect(position.x.toInt - 10, position.y.toInt - 10, 20, 20)
+		g.drawRect(math.round(position.x - 10).toInt, math.round(position.y.toInt - 10).toInt, 20, 20)
 	}
 
 	def move(movement: Movement): Unit = {
 		movement match {
-			case Movement.UP => move(0, -1)
-			case Movement.DOWN => move(0, 1)
-			case Movement.LEFT => move(-1, 0)
-			case Movement.RIGHT => move(1, 0)
+			case Direction.UP => move(0, -1)
+			case Direction.DOWN => move(0, 1)
+			case Direction.LEFT => move(-1, 0)
+			case Direction.RIGHT => move(1, 0)
 		}
 	}
 
-	private def move(x: Int, y: Int): Unit = {
-		if (momentum.dx < MAX_SPEED)
-			momentum.dx += x
-		if (momentum.dy < MAX_SPEED)
-			momentum.dy += y
+	private def move(x: Double, y: Int): Unit = {
+		acceleration += new Acceleration(if (x < MAX_SPEED) x else 0, if (y < MAX_SPEED) y else 0)
 	}
 
-	private def reduceMomentum() = {
-		if (momentum.dx > 0)
-			momentum.dx -= 1
-		else if (momentum.dx < 0)
-			momentum.dx += 1
-
-		if (momentum.dy > 0)
-			momentum.dy -= 1
-		else if (momentum.dy < 0)
-			momentum.dy += 1
+	private def reduceAcceleration(delta: Double) = {
+		val change: Double = delta * Square.DECELLERATION_FACTOR
+		val newX: Double = acceleration.dx match {
+			case dx if dx > 0 => if ((dx - change) > 0) dx - change else 0
+			case dx if dx < 0 => if ((dx + change) < 0) dx + change else 0
+			case dx => dx
+		}
+		val newY: Double = acceleration.dy match {
+			case dy if dy > 0 => if ((dy - change) > 0) dy - change else 0
+			case dy if dy < 0 => if ((dy + change) < 0) dy + change else 0
+			case dy => dy
+		}
+		acceleration = new Acceleration(newX, newY)
 	}
 }
 
 object Square {
 	val MAX_SPEED = 5
-	val MOMENTUM_LENGTH = 50
-}
-
-class Momentum(var dx: Double, var dy: Double) {
-	def exists: Boolean = (dx != 0) || (dy != 0)
-}
-
-object Movement extends Enumeration {
-	type Movement = Value
-	val UP, DOWN, RIGHT, LEFT = Value
+	val DECELLERATION_FACTOR = 0.035
+	val TICKS_TILL_SLOW_DOWN = 50
 }

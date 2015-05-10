@@ -4,7 +4,7 @@ import java.awt.event._
 import java.awt.{Graphics, Point}
 import javax.swing.{AbstractAction, Action, JPanel, KeyStroke}
 
-import geo.domain.{VisibleEntity, Square, GPoint, Movement}
+import geo.domain.{VisibleEntity, Square, GPoint, Direction}
 
 /**
  * @author Oliver Lea
@@ -25,8 +25,8 @@ class GeoPanel extends JPanel {
 
 	var visibleEntites: List[VisibleEntity] = List(new Square(this, new GPoint(20, 20)))
 
-	def tick() = {
-		visibleEntites.foreach(ve => ve.tick())
+	def tick(delta: Double) = {
+		visibleEntites.foreach(ve => ve.tick(delta))
 	}
 
 	override def paintComponent(g: Graphics): Unit = {

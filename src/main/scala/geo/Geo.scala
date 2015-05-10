@@ -32,7 +32,7 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 
 			var delta: Double = updateLength / OPTIMAL_TICK_TIME
 			while (delta >= 1) {
-				geoPanel.tick()
+				geoPanel.tick(delta)
 				delta -= OPTIMAL_TICK_TIME
 			}
 
