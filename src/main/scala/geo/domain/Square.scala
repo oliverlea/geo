@@ -52,7 +52,7 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 					ticks = 0
 			}
 		}
-		position += (acceleration * delta)
+		position += acceleration * delta
 	}
 
 	override def render(g: Graphics): Unit = {
@@ -69,11 +69,13 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 	}
 
 	private def move(x: Double, y: Int): Unit = {
-		acceleration += new Acceleration(if (x < MAX_SPEED) x else 0, if (y < MAX_SPEED) y else 0)
+		val nX = if (x < MAX_SPEED) x else 0
+		val nY = if (y < MAX_SPEED) y else 0
+		acceleration += new Acceleration(nX, nY)
 	}
 
 	private def reduceAcceleration(delta: Double) = {
-		val change: Double = delta * Square.DECELLERATION_FACTOR
+		val change: Double = delta * Square.DECELERATION_FACTOR
 		val newX: Double = acceleration.dx match {
 			case dx if dx > 0 => if ((dx - change) > 0) dx - change else 0
 			case dx if dx < 0 => if ((dx + change) < 0) dx + change else 0
@@ -90,6 +92,6 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 
 object Square {
 	val MAX_SPEED = 5
-	val DECELLERATION_FACTOR = 0.035
+	val DECELERATION_FACTOR = 0.035
 	val TICKS_TILL_SLOW_DOWN = 50
 }
