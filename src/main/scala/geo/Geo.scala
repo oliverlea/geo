@@ -16,7 +16,7 @@ object Geo {
 				val geoPanel = new GeoPanel
 				val geo = new Geo(geoPanel)
 				geo.setTitle("Geo")
-				geo.setMinimumSize(new Dimension(500, 500))
+				geo.setMinimumSize(new Dimension(800, 600))
 				geo.add(geoPanel)
 				geo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
 				geo.setVisible(true)
@@ -39,6 +39,7 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 
 			var fpsTime = lastFpsTime + updateLength
 			var fps = lastFps + 1
+
 			if (fpsTime > 1000) {
 				println(s"FPS: $fps")
 				fpsTime = 0
@@ -50,9 +51,11 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 				//tick()
 				delta -= OPTIMAL_TICK_TIME
 			}
+
 			SwingUtilities.invokeAndWait(new Runnable {
 				override def run(): Unit = geoPanel.repaint()
 			})
+
 			val sleepTime = tickStart - Platform.currentTime + OPTIMAL_TICK_TIME.toInt
 			if (sleepTime > 0) {
 				Thread sleep sleepTime

@@ -1,21 +1,22 @@
 package geo
 
-import java.awt.{Point, Graphics}
 import java.awt.event._
-import javax.swing.{Action, AbstractAction, JPanel, KeyStroke}
+import java.awt.{Graphics, Point}
+import javax.swing.{AbstractAction, Action, JPanel, KeyStroke}
 
-import geo.domain.GPoint
+import geo.domain.{Cube, GPoint, Movement}
 
 /**
  * @author Oliver Lea
  */
 class GeoPanel extends JPanel {
 
-	@volatile var position = new GPoint(20, 20)
+	val cube = new Cube(new GPoint(20, 20))
 
 	override def paintComponent(g: Graphics): Unit = {
 		super.paintComponent(g)
-		g.drawRect(position.x - 10, position.y - 10, 20, 20)
+		cube.act()
+		g.drawRect(cube.position.x - 10, cube.position.y - 10, 20, 20)
 	}
 
 	// constructor
@@ -23,12 +24,13 @@ class GeoPanel extends JPanel {
 	addMouseListener(new MouseAdapter {
 		override def mousePressed(e: MouseEvent): Unit = positionToPoint(e.getPoint)
 	})
+
 	addMouseMotionListener(new MouseAdapter {
 		override def mouseDragged(e: MouseEvent): Unit = positionToPoint(e.getPoint)
 	})
 
 	def positionToPoint(newPoint: Point): Unit = {
-		position = new GPoint(newPoint)
+		cube.position = new GPoint(newPoint)
 	}
 
 	val im = getInputMap
@@ -38,12 +40,15 @@ class GeoPanel extends JPanel {
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), KeyEvent.VK_D)
 
 	val am = getActionMap
-	am.put(KeyEvent.VK_W, () => position -= (0, 5))
-	am.put(KeyEvent.VK_A, () => position -= (5, 0))
-	am.put(KeyEvent.VK_S, () => position += (0, 5))
-	am.put(KeyEvent.VK_D, () => position += (5, 0))
+	am.put(KeyEvent.VK_W, () => cube.move(Movement.UP))
+	am.put(KeyEvent.VK_A, () => cube.move(Movement.LEFT))
+	am.put(KeyEvent.VK_S, () => cube.move(Movement.DOWN))
+	am.put(KeyEvent.VK_D, () => cube.move(Movement.RIGHT))
 
 	implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
-		override def actionPerformed(e: ActionEvent): Unit = f()
+		override def actionPerformed(e: ActionEvent): Unit = {
+			f()
+			repaint()
+		}
 	}
 }
