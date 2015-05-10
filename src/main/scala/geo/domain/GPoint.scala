@@ -6,15 +6,23 @@ import java.awt.Point
  * @author Paulius Imbrasas
  * @author Oliver Lea
  */
-class GPoint(_x: Int, _y: Int) extends Point(_x, _y) {
+class GPoint(val x: Double, val y: Double) {
 
-	def this(p: Point) = this(p.x, p.y)
+	def this(p: Point) = this(p.getX, p.getY)
 
-	def +(p: (Int, Int)) = {
+	def +(p: (Double, Double)) = {
 		new GPoint(x + p._1, y + p._2)
 	}
-	
-	def -(p: (Int, Int)) = {
+
+	def +(m: Momentum) = {
+		new GPoint(x + m.dx, y + m.dy)
+	}
+
+	def -(p: (Double, Double)) = {
 		new GPoint(x - p._1, y - p._2)
+	}
+
+	def -(m: Momentum) = {
+		new GPoint(x - m.dx, y - m.dy)
 	}
 }

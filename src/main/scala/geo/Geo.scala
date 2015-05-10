@@ -3,29 +3,13 @@ package geo
 import java.awt.Dimension
 import javax.swing.{JFrame, SwingUtilities}
 
+import geo.domain.VisibleEntity
+
 import scala.compat.Platform
 
 /**
  * @author Oliver Lea
  */
-object Geo {
-
-	def main(args: Array[String]): Unit = {
-		SwingUtilities.invokeLater(new Runnable {
-			override def run(): Unit = {
-				val geoPanel = new GeoPanel
-				val geo = new Geo(geoPanel)
-				geo.setTitle("Geo")
-				geo.setMinimumSize(new Dimension(800, 600))
-				geo.add(geoPanel)
-				geo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
-				geo.setVisible(true)
-				new Thread(geo).start()
-			}
-		})
-	}
-}
-
 class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 
 	val MAX_TICKS_PER_SECOND = 60
@@ -48,7 +32,7 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 
 			var delta: Double = updateLength / OPTIMAL_TICK_TIME
 			while (delta >= 1) {
-				//tick()
+				geoPanel.tick()
 				delta -= OPTIMAL_TICK_TIME
 			}
 
@@ -66,5 +50,23 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 		}
 		val currentTime = Platform.currentTime
 		run(Platform.currentTime, 0, currentTime)
+	}
+}
+
+object Geo {
+
+	def main(args: Array[String]): Unit = {
+		SwingUtilities.invokeLater(new Runnable {
+			override def run(): Unit = {
+				val geoPanel = new GeoPanel
+				val geo = new Geo(geoPanel)
+				geo.setTitle("Geo")
+				geo.setMinimumSize(new Dimension(800, 600))
+				geo.add(geoPanel)
+				geo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+				geo.setVisible(true)
+				new Thread(geo).start()
+			}
+		})
 	}
 }
