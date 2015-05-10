@@ -62,7 +62,7 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 					ticks = 0
 			}
 		}
-		position += (velocity * delta)
+		position += velocity * delta
 	}
 
 	override def render(g: Graphics): Unit = {
