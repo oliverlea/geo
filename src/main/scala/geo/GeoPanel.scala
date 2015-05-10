@@ -14,10 +14,18 @@ class GeoPanel extends JPanel {
 	// constructor
 
 	val im = getInputMap
+	private val W_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true)
+	private val A_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true)
+	private val S_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true)
+	private val D_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true)
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), KeyEvent.VK_W)
+	im.put(W_RELEASED, W_RELEASED)
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), KeyEvent.VK_A)
+	im.put(A_RELEASED, A_RELEASED)
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), KeyEvent.VK_S)
+	im.put(S_RELEASED, S_RELEASED)
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), KeyEvent.VK_D)
+	im.put(D_RELEASED, D_RELEASED)
 
 	val am = getActionMap
 

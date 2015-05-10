@@ -4,6 +4,6 @@ package geo.domain
  * @author Oliver Lea
  */
 object Direction extends Enumeration {
-  type Movement = Value
+  type DirectionType = Value
   val UP, DOWN, RIGHT, LEFT = Value
 }
