@@ -11,9 +11,13 @@ import geo.domain.Square.{ACCELERATION_FACTOR_PER_TICK, MAX_SPEED, TICKS_TILL_SL
  * @author Paulius Imbrasas
  * @author Oliver Lea
  */
-class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEntity {
+class Square(private val gp: GeoPanel,
+              var position: GPoint,
+              var heading: Velocity) extends VisibleEntity {
 
 	// Constructor
+
+  private var fire = false
 
 	private var keysHeld = Map(
 		Direction.UP -> false,
@@ -29,6 +33,7 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true), () => released(Direction.DOWN))
 	gp.am.put(KeyEvent.VK_D, () => pressed(Direction.RIGHT))
 	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true), () => released(Direction.RIGHT))
+	gp.am.put(KeyEvent.VK_SPACE, () => fire = true)
 
 	implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
 		override def actionPerformed(e: ActionEvent): Unit = {
@@ -55,6 +60,7 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 	override def tick(delta: Double): Unit = {
 		keysHeld.filter(_._2).foreach(kh => accelerate(kh._1, delta))
 		if (!velocity.stationary) {
+			heading = velocity.heading
 			ticks += delta
 			if (ticks >= TICKS_TILL_SLOW_DOWN) {
 				reduceAcceleration(delta)
@@ -63,6 +69,11 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 			}
 		}
 		position += velocity * delta
+
+    if (fire) {
+      gp.addEntity(new Bullet(gp, position, heading))
+      fire = false
+    }
 	}
 
 	override def render(g: Graphics): Unit = {

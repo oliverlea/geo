@@ -1,44 +1,52 @@
 package geo
 
+import java.awt.Graphics
 import java.awt.event._
-import java.awt.{Graphics, Point}
-import javax.swing.{AbstractAction, Action, JPanel, KeyStroke}
+import javax.swing.{JPanel, KeyStroke}
 
-import geo.domain.{VisibleEntity, Square, GPoint, Direction}
+import geo.domain._
 
 /**
  * @author Oliver Lea
  */
 class GeoPanel extends JPanel {
 
-	// constructor
+  // constructor
 
-	val im = getInputMap
-	private val W_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true)
-	private val A_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true)
-	private val S_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true)
-	private val D_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true)
-	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), KeyEvent.VK_W)
-	im.put(W_RELEASED, W_RELEASED)
-	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), KeyEvent.VK_A)
-	im.put(A_RELEASED, A_RELEASED)
-	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), KeyEvent.VK_S)
-	im.put(S_RELEASED, S_RELEASED)
-	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), KeyEvent.VK_D)
-	im.put(D_RELEASED, D_RELEASED)
+  val im = getInputMap
+  private val W_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true)
+  private val A_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true)
+  private val S_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true)
+  private val D_RELEASED = KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true)
+  im.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), KeyEvent.VK_W)
+  im.put(W_RELEASED, W_RELEASED)
+  im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), KeyEvent.VK_A)
+  im.put(A_RELEASED, A_RELEASED)
+  im.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), KeyEvent.VK_S)
+  im.put(S_RELEASED, S_RELEASED)
+  im.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), KeyEvent.VK_D)
+  im.put(D_RELEASED, D_RELEASED)
 
-	val am = getActionMap
+  im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyEvent.VK_SPACE)
 
-	// Members and methods
+  val am = getActionMap
 
-	var visibleEntites: List[VisibleEntity] = List(new Square(this, new GPoint(20, 20)))
+  // Members and methods
 
-	def tick(delta: Double) = {
-		visibleEntites.foreach(ve => ve.tick(delta))
-	}
+  var visibleEntities: List[VisibleEntity] = List(
+    new Square(this, new GPoint(20, 20), new Velocity(0, 0))
+  )
 
-	override def paintComponent(g: Graphics): Unit = {
-		super.paintComponent(g)
-		visibleEntites.foreach(ve => ve.render(g))
-	}
+  def tick(delta: Double) = {
+    visibleEntities.foreach(_.tick(delta))
+  }
+
+  def addEntity(entity: VisibleEntity): Unit = {
+    visibleEntities = visibleEntities :+ entity
+  }
+
+  override def paintComponent(g: Graphics): Unit = {
+    super.paintComponent(g)
+    visibleEntities.foreach(_.render(g))
+  }
 }
