@@ -94,7 +94,7 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 	}
 
 	private def reduceAcceleration(delta: Double) = {
-		val change: Double = delta * Square.DECCELERATION_FACTOR_PER_TICK
+		val change: Double = delta * Square.DECELERATION_FACTOR_PER_TICK
 		val newX: Double = velocity.dx match {
 			case dx if dx > 0 => if ((dx - change) > 0) dx - change else 0
 			case dx if dx < 0 => if ((dx + change) < 0) dx + change else 0
