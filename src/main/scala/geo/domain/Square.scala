@@ -112,6 +112,6 @@ class Square(private val gp: GeoPanel, var position: GPoint) extends VisibleEnti
 object Square {
 	val MAX_SPEED = 5
 	val ACCELERATION_FACTOR_PER_TICK = 0.1
-	val DECCELERATION_FACTOR_PER_TICK = 0.035
+	val DECELERATION_FACTOR_PER_TICK = 0.035
 	val TICKS_TILL_SLOW_DOWN = 50
 }
