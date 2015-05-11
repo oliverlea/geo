@@ -107,13 +107,13 @@ class Square(private val gp: GeoPanel,
 	private def reduceAcceleration(delta: Double) = {
 		val change: Double = delta * Square.DECELERATION_FACTOR_PER_TICK
 		val newX: Double = velocity.dx match {
-			case dx if dx > 0 => if ((dx - change) > 0) dx - change else 0
-			case dx if dx < 0 => if ((dx + change) < 0) dx + change else 0
+			case dx if dx > 0 => if ((dx * change) > 0) dx * change else 0
+			case dx if dx < 0 => if ((dx * change) < 0) dx * change else 0
 			case dx => dx
 		}
 		val newY: Double = velocity.dy match {
-			case dy if dy > 0 => if ((dy - change) > 0) dy - change else 0
-			case dy if dy < 0 => if ((dy + change) < 0) dy + change else 0
+			case dy if dy > 0 => if ((dy * change) > 0) dy * change else 0
+			case dy if dy < 0 => if ((dy * change) < 0) dy * change else 0
 			case dy => dy
 		}
 		velocity = new Velocity(newX, newY)
@@ -122,7 +122,7 @@ class Square(private val gp: GeoPanel,
 
 object Square {
 	val MAX_SPEED = 5
-	val ACCELERATION_FACTOR_PER_TICK = 0.1
-	val DECELERATION_FACTOR_PER_TICK = 0.035
+	val ACCELERATION_FACTOR_PER_TICK = 0.15
+	val DECELERATION_FACTOR_PER_TICK = 0.025
 	val TICKS_TILL_SLOW_DOWN = 50
 }
