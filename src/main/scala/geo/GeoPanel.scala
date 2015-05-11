@@ -1,6 +1,6 @@
 package geo
 
-import java.awt.Graphics
+import java.awt.{Graphics2D, Graphics}
 import java.awt.event._
 import javax.swing.{JPanel, KeyStroke}
 
@@ -39,6 +39,7 @@ class GeoPanel extends JPanel {
 
   def tick(delta: Double) = {
     visibleEntities.foreach(_.tick(delta))
+    visibleEntities = visibleEntities.filterNot(_.visible)
   }
 
   def addEntity(entity: VisibleEntity): Unit = {
@@ -47,6 +48,6 @@ class GeoPanel extends JPanel {
 
   override def paintComponent(g: Graphics): Unit = {
     super.paintComponent(g)
-    visibleEntities.foreach(_.render(g))
+    visibleEntities.foreach(_.render(g.asInstanceOf[Graphics2D]))
   }
 }

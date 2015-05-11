@@ -1,6 +1,6 @@
 package geo.domain
 
-import java.awt.Graphics
+import java.awt.Graphics2D
 
 import geo.GeoPanel
 
@@ -14,12 +14,12 @@ class Bullet(private val gp: GeoPanel, var position: GPoint, var heading: Veloci
     heading.dy * Bullet.VELOCITY_FACTOR
   )
 
-  override def render(g: Graphics): Unit = {
-    g.drawLine(
+  override def render(g: Graphics2D): Unit = {
+    g.drawOval(
       math.round(position.x).toInt,
       math.round(position.y).toInt,
-      math.round(position.y + 5).toInt,
-      math.round(position.y + 5).toInt
+      Bullet.SIZE,
+      Bullet.SIZE
     )
   }
 
@@ -29,5 +29,6 @@ class Bullet(private val gp: GeoPanel, var position: GPoint, var heading: Veloci
 }
 
 object Bullet {
-  val VELOCITY_FACTOR = 5
+  val VELOCITY_FACTOR = 10
+  val SIZE = 3
 }

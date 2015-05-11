@@ -1,8 +1,8 @@
 package geo.domain
 
 import java.awt.event.{ActionEvent, KeyEvent, MouseAdapter, MouseEvent}
-import java.awt.{Graphics, Point}
-import javax.swing.{KeyStroke, AbstractAction, Action}
+import java.awt.{Graphics2D, Point}
+import javax.swing.{AbstractAction, Action, KeyStroke}
 
 import geo.GeoPanel
 import geo.domain.Square.{ACCELERATION_FACTOR_PER_TICK, MAX_SPEED, TICKS_TILL_SLOW_DOWN}
@@ -76,7 +76,7 @@ class Square(private val gp: GeoPanel,
     }
 	}
 
-	override def render(g: Graphics): Unit = {
+	override def render(g: Graphics2D): Unit = {
 		g.drawRect(math.round(position.x - 10).toInt, math.round(position.y - 10).toInt, 20, 20)
 	}
 
