@@ -97,10 +97,10 @@ class Square(private val gp: GeoPanel,
 		})
 	}
 
-	private def move(acc: Velocity, x: Double, y: Double): Velocity = {
+	private def move(v: Velocity, x: Double, y: Double): Velocity = {
 		new Velocity(
-			if (math.abs(velocity.dx) < MAX_SPEED) x else 0,
-			if (math.abs(velocity.dy) < MAX_SPEED) y else 0
+			if (math.abs(velocity.dx + x) < MAX_SPEED) x else 0,
+			if (math.abs(velocity.dy + y) < MAX_SPEED) y else 0
 		)
 	}
 
