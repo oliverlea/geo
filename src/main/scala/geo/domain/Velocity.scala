@@ -4,7 +4,7 @@ package geo.domain
  * @author Oliver Lea
  */
 class Velocity(val dx: Double, val dy: Double) {
-  def stationary = dx == 0 && dy == 0
+  def stationary = dx < 1E-5 && dy < 1E-5
 
   def heading = {
     val ddx = dx match {
@@ -25,6 +25,13 @@ class Velocity(val dx: Double, val dy: Double) {
   def -(da: Velocity): Velocity = new Velocity(dx - da.dx, dy - da.dy)
 
   def *(f: Double): Velocity = new Velocity(dx * f, dy * f)
+  
+  def *(f: Double, d: Direction.Value): Velocity = d match {
+    case Direction.UP | Direction.DOWN => new Velocity(dx, dy * f)
+    case Direction.LEFT | Direction.RIGHT => new Velocity(dx * f, dy)
+  }
+
+  def *(f: (Double, Double)): Velocity = new Velocity(dx * f._1, dy * f._2)
 
   override def toString = s"[dx: $dx; dy: $dy]"
 }

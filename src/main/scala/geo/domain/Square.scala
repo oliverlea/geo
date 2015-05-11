@@ -5,7 +5,7 @@ import java.awt.{Graphics2D, Point}
 import javax.swing.{AbstractAction, Action, KeyStroke}
 
 import geo.GeoPanel
-import geo.domain.Square.{ACCELERATION_FACTOR_PER_TICK, MAX_SPEED, TICKS_TILL_SLOW_DOWN}
+import geo.domain.Square._
 
 /**
  * @author Paulius Imbrasas
@@ -58,22 +58,21 @@ class Square(private val gp: GeoPanel,
 	private var ticks: Double = 0
 
 	override def tick(delta: Double): Unit = {
-		keysHeld.filter(_._2).foreach(kh => accelerate(kh._1, delta))
+		keysHeld.filter(_._2).foreach(kh => velocity = accelerate(velocity, kh._1, delta))
 		if (!velocity.stationary) {
 			heading = velocity.heading
 			ticks += delta
 			if (ticks >= TICKS_TILL_SLOW_DOWN) {
-				reduceAcceleration(delta)
+				velocity = reduceAcceleration(delta * DECELERATION_PER_TICK)
 				if (velocity.stationary)
 					ticks = 0
 			}
 		}
-		position += velocity * delta
-
     if (fire) {
       gp.addEntity(new Bullet(gp, position, heading))
       fire = false
     }
+		position += velocity
 	}
 
 	override def render(g: Graphics2D): Unit = {
@@ -88,41 +87,35 @@ class Square(private val gp: GeoPanel,
 		keysHeld += (direction -> false)
 	}
 
-	private def accelerate(direction: Direction.Value, factor: Double): Unit = {
-		velocity += (direction match {
-			case Direction.UP => move(velocity, 0, -ACCELERATION_FACTOR_PER_TICK) * factor
-			case Direction.DOWN => move(velocity, 0, ACCELERATION_FACTOR_PER_TICK) * factor
-			case Direction.LEFT => move(velocity, -ACCELERATION_FACTOR_PER_TICK, 0) * factor
-			case Direction.RIGHT => move(velocity, ACCELERATION_FACTOR_PER_TICK, 0) * factor
-		})
+	private def accelerate(vel: Velocity, direction: Direction.Value, factor: Double): Velocity = {
+		val toAddVel = INITIAL_VELOCITY * factor
+		direction match {
+			case Direction.UP => new Velocity(vel.dx, vel.dy - toAddVel)
+			case Direction.DOWN => new Velocity(vel.dx, vel.dy + toAddVel)
+			case Direction.LEFT => new Velocity(vel.dx - toAddVel, vel.dy)
+			case Direction.RIGHT => new Velocity(vel.dx + toAddVel, vel.dy)
+		}
 	}
 
-	private def move(v: Velocity, x: Double, y: Double): Velocity = {
-		new Velocity(
-			if (math.abs(velocity.dx + x) < MAX_SPEED) x else 0,
-			if (math.abs(velocity.dy + y) < MAX_SPEED) y else 0
-		)
-	}
-
-	private def reduceAcceleration(delta: Double) = {
-		val change: Double = delta * Square.DECELERATION_FACTOR_PER_TICK
+	private def reduceAcceleration(amount: Double): Velocity = {
 		val newX: Double = velocity.dx match {
-			case dx if dx > 0 => if ((dx * change) > 0) dx * change else 0
-			case dx if dx < 0 => if ((dx * change) < 0) dx * change else 0
+			case dx if dx > 0 => if ((dx - amount) > 0) dx - amount else 0
+			case dx if dx < 0 => if ((dx + amount) < 0) dx + amount else 0
 			case dx => dx
 		}
 		val newY: Double = velocity.dy match {
-			case dy if dy > 0 => if ((dy * change) > 0) dy * change else 0
-			case dy if dy < 0 => if ((dy * change) < 0) dy * change else 0
+			case dy if dy > 0 => if ((dy - amount) > 0) dy - amount else 0
+			case dy if dy < 0 => if ((dy + amount) < 0) dy + amount else 0
 			case dy => dy
 		}
-		velocity = new Velocity(newX, newY)
+		new Velocity(newX, newY)
 	}
 }
 
 object Square {
 	val MAX_SPEED = 5
-	val ACCELERATION_FACTOR_PER_TICK = 0.15
-	val DECELERATION_FACTOR_PER_TICK = 0.025
+	val INITIAL_VELOCITY = 0.5
+	val ACCELERATION_PER_TICK = 1.005
+	val DECELERATION_PER_TICK = 0.025
 	val TICKS_TILL_SLOW_DOWN = 50
 }
