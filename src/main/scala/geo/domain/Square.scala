@@ -12,10 +12,12 @@ import geo.domain.Square._
  * @author Oliver Lea
  */
 class Square(private val gp: GeoPanel,
-						 var position: GPoint,
-						 var heading: Velocity) extends VisibleEntity(gp) {
+						 private val initialVelocity: Velocity,
+						 private var position: GPoint) extends VisibleEntity(gp, initialVelocity, position) {
 
 	// Constructor
+
+	private var velocity = initialVelocity
 
 	private var fire = false
 
@@ -35,7 +37,7 @@ class Square(private val gp: GeoPanel,
 	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true), () => releasedDirection(Direction.RIGHT))
 	gp.am.put(KeyEvent.VK_SPACE, () => fire = true)
 
-	implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
+	private implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
 		override def actionPerformed(e: ActionEvent): Unit = {
 			f()
 		}
@@ -53,8 +55,6 @@ class Square(private val gp: GeoPanel,
 		position = new GPoint(newPoint)
 	}
 
-	private var velocity = new Velocity(0, 0)
-
 	override def tick(delta: Double): Unit = {
 		keysHeld.filter(_._2.held).foreach(kh => {
 			velocity = velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
@@ -62,9 +62,11 @@ class Square(private val gp: GeoPanel,
 				velocity = new Velocity(if (velocity.dx > 0) MAX_SPEED else -MAX_SPEED, velocity.dy)
 			if (math.abs(velocity.dy) > MAX_SPEED)
 				velocity = new Velocity(velocity.dx, if (velocity.dy > 0) MAX_SPEED else -MAX_SPEED)
+			if ((velocity.dy * velocity.dy + velocity.dx + velocity.dx) > MAX_SPEED * MAX_SPEED) {
+				velocity = velocity.normalize * MAX_SPEED
+			}
 		})
 		if (!velocity.stationary) {
-			heading = velocity.heading
 			keysHeld.foreach(hk => {
 				val kh: KeyInfo = hk._2
 				if (!kh.held &&kh.ticksHeld >= Square.TICKS_TILL_SLOW_DOWN) {
@@ -77,7 +79,7 @@ class Square(private val gp: GeoPanel,
 			})
 		}
 		if (fire) {
-			gp.addEntity(new Bullet(gp, position, heading))
+			gp.addEntity(new Bullet(gp, velocity.normalize * Bullet.SPEED, position))
 			fire = false
 		}
 		position += velocity

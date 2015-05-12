@@ -8,13 +8,8 @@ import geo.GeoPanel
  * @author Paulius Imbrasas
  */
 class Bullet(private val gp: GeoPanel,
-             var position: GPoint,
-             var direction: Velocity) extends VisibleEntity(gp) {
-
-  private val velocity = new Velocity(
-    direction.dx * Bullet.VELOCITY_FACTOR,
-    direction.dy * Bullet.VELOCITY_FACTOR
-  )
+             private val velocity: Velocity,
+             private var position: GPoint) extends VisibleEntity(gp, velocity, position) {
 
   override def render(g: Graphics2D): Unit = {
     g.drawOval(
@@ -31,6 +26,6 @@ class Bullet(private val gp: GeoPanel,
 }
 
 object Bullet {
-  val VELOCITY_FACTOR = 10
+  val SPEED = 7
   val SIZE = 3
 }

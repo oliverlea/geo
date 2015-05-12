@@ -34,7 +34,7 @@ class GeoPanel extends JPanel {
   // Members and methods
 
   var visibleEntities: List[VisibleEntity] = List(
-    new Square(this, new GPoint(20, 20), new Velocity(0, 0))
+    new Square(this, new Velocity(0, 0), new GPoint(20, 20))
   )
 
   def tick(delta: Double) = {

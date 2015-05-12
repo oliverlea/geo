@@ -12,23 +12,7 @@ class Velocity(val dx: Double, val dy: Double) {
     case Direction.RIGHT => dx < 1E-5
   }
 
-  def heading = {
-    val ddx = dx match {
-      case x if dx > 0 => 1
-      case x if dx < 0 => -1
-      case _ => 0
-    }
-    val ddy = dy match {
-      case y if dy > 0 => 1
-      case y if dy < 0 => -1
-      case _ => 0
-    }
-    new Velocity(ddx, ddy)
-  }
-
   def +(da: Velocity): Velocity = new Velocity(dx + da.dx, dy + da.dy)
-
-  def -(da: Velocity): Velocity = new Velocity(dx - da.dx, dy - da.dy)
 
   def *(f: Double): Velocity = new Velocity(dx * f, dy * f)
 
@@ -53,6 +37,23 @@ class Velocity(val dx: Double, val dy: Double) {
       case Direction.LEFT => new Velocity(dx - toAddVel, dy)
       case Direction.RIGHT => new Velocity(dx + toAddVel, dy)
     }
+  }
+
+  def linearAccelerate(toAddVel: Double): Velocity = {
+    val newX = dx match {
+      case _ if dx < 0 => dx - toAddVel
+      case _ => dx + toAddVel
+    }
+    val newY = dy match {
+      case _ if dy < 0 => dy - toAddVel
+      case _ => dy + toAddVel
+    }
+    new Velocity(newX, newY)
+  }
+
+  def normalize: Velocity = {
+    val magnitude = math.sqrt(dx * dx + dy * dy)
+    new Velocity(dx / magnitude, dy / magnitude)
   }
 
   def *(f: (Double, Double)): Velocity = new Velocity(dx * f._1, dy * f._2)
