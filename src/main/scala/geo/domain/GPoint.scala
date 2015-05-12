@@ -25,4 +25,6 @@ class GPoint(val x: Double, val y: Double) {
 	def -(a: Velocity) = {
 		new GPoint(x - a.dx, y - a.dy)
 	}
+
+  override def toString: String = s"[$x, $y]"
 }

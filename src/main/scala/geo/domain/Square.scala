@@ -1,7 +1,7 @@
 package geo.domain
 
-import java.awt.event.{ActionEvent, KeyEvent, MouseAdapter, MouseEvent}
-import java.awt.{Graphics2D, Point}
+import java.awt.Graphics2D
+import java.awt.event.{ActionEvent, KeyEvent}
 import javax.swing.{AbstractAction, Action, KeyStroke}
 
 import geo.GeoPanel
@@ -20,6 +20,8 @@ class Square(private val gp: GeoPanel,
 	private var velocity = initialVelocity
 
 	private var fire = false
+  private var firingDirection = new Velocity(0, 0)
+  private var fireCountdown: Double = 0
 
 	private var keysHeld = Map(
 		Direction.UP -> new KeyInfo(false, 0),
@@ -37,22 +39,15 @@ class Square(private val gp: GeoPanel,
 	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true), () => releasedDirection(Direction.RIGHT))
 	gp.am.put(KeyEvent.VK_SPACE, () => fire = true)
 
+  gp.addMouseHandler((coordinates, held) => {
+    fire = held
+    if (held) firingDirection = new Velocity(coordinates.x, coordinates.y)
+  })
+
 	private implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
 		override def actionPerformed(e: ActionEvent): Unit = {
 			f()
 		}
-	}
-
-	gp.addMouseListener(new MouseAdapter {
-		override def mousePressed(e: MouseEvent): Unit = positionToPoint(e.getPoint)
-	})
-
-	gp.addMouseMotionListener(new MouseAdapter {
-		override def mouseDragged(e: MouseEvent): Unit = positionToPoint(e.getPoint)
-	})
-
-	def positionToPoint(newPoint: Point): Unit = {
-		position = new GPoint(newPoint)
 	}
 
 	override def tick(delta: Double): Unit = {
@@ -66,10 +61,11 @@ class Square(private val gp: GeoPanel,
 				velocity = velocity.normalize * MAX_SPEED
 			}
 		})
+
 		if (!velocity.stationary) {
 			keysHeld.foreach(hk => {
 				val kh: KeyInfo = hk._2
-				if (!kh.held &&kh.ticksHeld >= Square.TICKS_TILL_SLOW_DOWN) {
+        if (!kh.held && kh.ticksHeld >= Square.TICKS_TILL_SLOW_DOWN) {
 					velocity = velocity.scaleAccelerate(hk._1, 1 - (delta * (1 - DECELERATION_FACTOR_PER_TICK)))
 				}
 				if (velocity.stationaryInDirection(hk._1))
@@ -78,11 +74,14 @@ class Square(private val gp: GeoPanel,
 					keysHeld += hk._1 -> new KeyInfo(kh.held, kh.ticksHeld + 1)
 			})
 		}
-		if (fire) {
-			gp.addEntity(new Bullet(gp, velocity.normalize * Bullet.SPEED, position))
-			fire = false
+
+    fireCountdown -= delta
+    if (fire && fireCountdown <= 0) {
+      gp.addEntity(new Bullet(gp, firingDirection.normalize * Bullet.SPEED, position))
+      fireCountdown = FIRE_DELAY
 		}
-		position += velocity
+
+    position += velocity
 	}
 
 	override def render(g: Graphics2D): Unit = {
@@ -103,4 +102,5 @@ object Square {
 	val ACCELERATION_PER_TICK = 0.12 // Linear
 	val DECELERATION_FACTOR_PER_TICK = 0.98 // Non-linear
 	val TICKS_TILL_SLOW_DOWN = 10
+  val FIRE_DELAY = 5 // ticks
 }

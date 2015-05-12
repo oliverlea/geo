@@ -1,8 +1,8 @@
 package geo
 
-import java.awt.{Graphics2D, Graphics}
 import java.awt.event._
-import javax.swing.{JPanel, KeyStroke}
+import java.awt.{Graphics, Graphics2D}
+import javax.swing.{JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
 
@@ -31,9 +31,30 @@ class GeoPanel extends JPanel {
 
   val am = getActionMap
 
-  // Members and methods
+  type MouseHandler = (GPoint, Boolean) => Unit
 
-  var visibleEntities: List[VisibleEntity] = List(
+  addMouseMotionListener(new MouseMotionAdapter {
+    override def mouseDragged(e: MouseEvent): Unit = {
+      if (SwingUtilities.isLeftMouseButton(e)) {
+        val mousePosition = new GPoint(e.getX, e.getY)
+        mouseHandlers.foreach(_(mousePosition, true))
+      }
+    }
+  })
+
+  addMouseListener(new MouseAdapter {
+    override def mouseReleased(e: MouseEvent): Unit = {
+      if (SwingUtilities.isLeftMouseButton(e)) {
+        val mousePosition = new GPoint(e.getX, e.getY)
+        mouseHandlers.foreach(_(mousePosition, false))
+      }
+    }
+  })
+
+  // Members and methods
+  private var mouseHandlers: List[MouseHandler] = List()
+
+  private var visibleEntities: List[VisibleEntity] = List(
     new Square(this, new Velocity(0, 0), new GPoint(20, 20))
   )
 
@@ -44,6 +65,10 @@ class GeoPanel extends JPanel {
 
   def addEntity(entity: VisibleEntity): Unit = {
     visibleEntities = entity :: visibleEntities
+  }
+
+  def addMouseHandler(handler: MouseHandler): Unit = {
+    mouseHandlers = handler :: mouseHandlers
   }
 
   override def paintComponent(g: Graphics): Unit = {
