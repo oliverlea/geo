@@ -3,6 +3,6 @@ package geo.domain
 /**
  * @author Oliver Lea
  */
-trait Entity {
+abstract class Entity {
   def tick(delta: Double): Unit
 }

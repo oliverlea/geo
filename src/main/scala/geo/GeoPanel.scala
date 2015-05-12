@@ -43,7 +43,7 @@ class GeoPanel extends JPanel {
   }
 
   def addEntity(entity: VisibleEntity): Unit = {
-    visibleEntities = visibleEntities :+ entity
+    visibleEntities = entity :: visibleEntities
   }
 
   override def paintComponent(g: Graphics): Unit = {

@@ -12,27 +12,27 @@ import geo.domain.Square._
  * @author Oliver Lea
  */
 class Square(private val gp: GeoPanel,
-              var position: GPoint,
-              var heading: Velocity) extends VisibleEntity {
+						 var position: GPoint,
+						 var heading: Velocity) extends VisibleEntity(gp) {
 
 	// Constructor
 
-  private var fire = false
+	private var fire = false
 
 	private var keysHeld = Map(
-		Direction.UP -> false,
-		Direction.LEFT -> false,
-		Direction.DOWN -> false,
-		Direction.RIGHT -> false
+		Direction.UP -> new KeyInfo(false, 0),
+		Direction.LEFT -> new KeyInfo(false, 0),
+		Direction.DOWN -> new KeyInfo(false, 0),
+		Direction.RIGHT -> new KeyInfo(false, 0)
 	)
-	gp.am.put(KeyEvent.VK_W, () => pressed(Direction.UP))
-	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true), () => released(Direction.UP))
-	gp.am.put(KeyEvent.VK_A, () => pressed(Direction.LEFT))
-	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true), () => released(Direction.LEFT))
-	gp.am.put(KeyEvent.VK_S, () => pressed(Direction.DOWN))
-	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true), () => released(Direction.DOWN))
-	gp.am.put(KeyEvent.VK_D, () => pressed(Direction.RIGHT))
-	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true), () => released(Direction.RIGHT))
+	gp.am.put(KeyEvent.VK_W, () => pressedDirection(Direction.UP))
+	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true), () => releasedDirection(Direction.UP))
+	gp.am.put(KeyEvent.VK_A, () => pressedDirection(Direction.LEFT))
+	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true), () => releasedDirection(Direction.LEFT))
+	gp.am.put(KeyEvent.VK_S, () => pressedDirection(Direction.DOWN))
+	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true), () => releasedDirection(Direction.DOWN))
+	gp.am.put(KeyEvent.VK_D, () => pressedDirection(Direction.RIGHT))
+	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true), () => releasedDirection(Direction.RIGHT))
 	gp.am.put(KeyEvent.VK_SPACE, () => fire = true)
 
 	implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
@@ -55,23 +55,31 @@ class Square(private val gp: GeoPanel,
 
 	private var velocity = new Velocity(0, 0)
 
-	private var ticks: Double = 0
-
 	override def tick(delta: Double): Unit = {
-		keysHeld.filter(_._2).foreach(kh => velocity = accelerate(velocity, kh._1, delta))
+		keysHeld.filter(_._2.held).foreach(kh => {
+			velocity = velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
+			if (math.abs(velocity.dx) > MAX_SPEED)
+				velocity = new Velocity(if (velocity.dx > 0) MAX_SPEED else -MAX_SPEED, velocity.dy)
+			if (math.abs(velocity.dy) > MAX_SPEED)
+				velocity = new Velocity(velocity.dx, if (velocity.dy > 0) MAX_SPEED else -MAX_SPEED)
+		})
 		if (!velocity.stationary) {
 			heading = velocity.heading
-			ticks += delta
-			if (ticks >= TICKS_TILL_SLOW_DOWN) {
-				velocity = reduceAcceleration(delta * DECELERATION_PER_TICK)
-				if (velocity.stationary)
-					ticks = 0
-			}
+			keysHeld.foreach(hk => {
+				val kh: KeyInfo = hk._2
+				if (!kh.held &&kh.ticksHeld >= Square.TICKS_TILL_SLOW_DOWN) {
+					velocity = velocity.scaleAccelerate(hk._1, 1 - (delta * (1 - DECELERATION_FACTOR_PER_TICK)))
+				}
+				if (velocity.stationaryInDirection(hk._1))
+					keysHeld += hk._1 -> new KeyInfo(kh.held, 0)
+				else
+					keysHeld += hk._1 -> new KeyInfo(kh.held, kh.ticksHeld + 1)
+			})
 		}
-    if (fire) {
-      gp.addEntity(new Bullet(gp, position, heading))
-      fire = false
-    }
+		if (fire) {
+			gp.addEntity(new Bullet(gp, position, heading))
+			fire = false
+		}
 		position += velocity
 	}
 
@@ -79,43 +87,18 @@ class Square(private val gp: GeoPanel,
 		g.drawRect(math.round(position.x - 10).toInt, math.round(position.y - 10).toInt, 20, 20)
 	}
 
-	def pressed(direction: Direction.Value): Unit = {
-		keysHeld += (direction -> true)
+	def pressedDirection(direction: Direction.Value): Unit = {
+		keysHeld += (direction -> new KeyInfo(true, 0))
 	}
 
-	def released(direction: Direction.Value): Unit = {
-		keysHeld += (direction -> false)
-	}
-
-	private def accelerate(vel: Velocity, direction: Direction.Value, factor: Double): Velocity = {
-		val toAddVel = INITIAL_VELOCITY * factor
-		direction match {
-			case Direction.UP => new Velocity(vel.dx, vel.dy - toAddVel)
-			case Direction.DOWN => new Velocity(vel.dx, vel.dy + toAddVel)
-			case Direction.LEFT => new Velocity(vel.dx - toAddVel, vel.dy)
-			case Direction.RIGHT => new Velocity(vel.dx + toAddVel, vel.dy)
-		}
-	}
-
-	private def reduceAcceleration(amount: Double): Velocity = {
-		val newX: Double = velocity.dx match {
-			case dx if dx > 0 => if ((dx - amount) > 0) dx - amount else 0
-			case dx if dx < 0 => if ((dx + amount) < 0) dx + amount else 0
-			case dx => dx
-		}
-		val newY: Double = velocity.dy match {
-			case dy if dy > 0 => if ((dy - amount) > 0) dy - amount else 0
-			case dy if dy < 0 => if ((dy + amount) < 0) dy + amount else 0
-			case dy => dy
-		}
-		new Velocity(newX, newY)
+	def releasedDirection(direction: Direction.Value): Unit = {
+		keysHeld += (direction -> new KeyInfo(false, 0))
 	}
 }
 
 object Square {
 	val MAX_SPEED = 5
-	val INITIAL_VELOCITY = 0.5
-	val ACCELERATION_PER_TICK = 1.005
-	val DECELERATION_PER_TICK = 0.025
-	val TICKS_TILL_SLOW_DOWN = 50
+	val ACCELERATION_PER_TICK = 0.12 // Linear
+	val DECELERATION_FACTOR_PER_TICK = 0.98 // Non-linear
+	val TICKS_TILL_SLOW_DOWN = 10
 }
