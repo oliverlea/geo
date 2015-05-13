@@ -58,10 +58,5 @@ class Velocity(val dx: Double, val dy: Double) {
     new Velocity(dx / magnitude, dy / magnitude)
   }
 
-  def floor: Velocity = {
-//    val ddx = math.ceil()
-    new Velocity(0, 0)
-  }
-
   override def toString = s"[dx: $dx; dy: $dy]"
 }
