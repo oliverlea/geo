@@ -5,4 +5,5 @@ package geo.domain
  */
 abstract class Entity {
   def tick(delta: Double): Unit
+  def shouldLive: Boolean
 }

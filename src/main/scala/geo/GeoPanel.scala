@@ -63,12 +63,12 @@ class GeoPanel extends JPanel {
   private var mouseHandlers: List[MouseHandler] = List()
 
   private var visibleEntities: List[VisibleEntity] = List(
-    new Square(this, new Velocity(0, 0), new GPoint(20, 20))
+    new Player(this, new Velocity(0, 0), new GPoint(20, 20))
   )
 
   def tick(delta: Double) = {
     visibleEntities.foreach(_.tick(delta))
-    visibleEntities = visibleEntities.filterNot(_.visible)
+    visibleEntities = visibleEntities.filter(_.shouldLive)
   }
 
   def addEntity(entity: VisibleEntity): Unit = {

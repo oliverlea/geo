@@ -11,6 +11,17 @@ class Bullet(private val gp: GeoPanel,
              private val velocity: Velocity,
              private var position: GPoint) extends VisibleEntity(gp, velocity, position) {
 
+
+  override def tick(delta: Double): Unit = {
+    position = nextPosition(position, velocity * delta)
+  }
+
+  private def nextPosition(p: GPoint, v: Velocity): GPoint = {
+    p + v
+  }
+
+  override def shouldLive: Boolean = visible
+
   override def render(g: Graphics2D): Unit = {
     g.drawOval(
       math.round(position.x).toInt,
@@ -19,13 +30,9 @@ class Bullet(private val gp: GeoPanel,
       Bullet.SIZE
     )
   }
-
-  override def tick(delta: Double): Unit = {
-    position += velocity * delta
-  }
 }
 
 object Bullet {
-  val SPEED = 7.0
-  val SIZE = 3
+  val SPEED: Double = 7
+  val SIZE: Int = 3
 }

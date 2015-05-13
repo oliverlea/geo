@@ -5,13 +5,13 @@ import java.awt.event.{ActionEvent, KeyEvent}
 import javax.swing.{AbstractAction, Action, KeyStroke}
 
 import geo.GeoPanel
-import geo.domain.Square._
+import geo.domain.Player._
 
 /**
  * @author Paulius Imbrasas
  * @author Oliver Lea
  */
-class Square(private val gp: GeoPanel,
+class Player(private val gp: GeoPanel,
              private val initialVelocity: Velocity,
              private var position: GPoint) extends VisibleEntity(gp, initialVelocity, position) {
 
@@ -40,7 +40,8 @@ class Square(private val gp: GeoPanel,
 
   gp.addMouseHandler((coordinates, held) => {
     fire = held
-    if (held) firingTarget = new GPoint(coordinates.x, coordinates.y)
+    if (held)
+      firingTarget = new GPoint(coordinates.x, coordinates.y)
   })
 
   private implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
@@ -52,19 +53,12 @@ class Square(private val gp: GeoPanel,
   override def tick(delta: Double): Unit = {
     keysHeld.filter(_._2.held).foreach(kh => {
       velocity = velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
-      if (math.abs(velocity.dx) > MAX_SPEED)
-        velocity = new Velocity(if (velocity.dx > 0) MAX_SPEED else -MAX_SPEED, velocity.dy)
-      if (math.abs(velocity.dy) > MAX_SPEED)
-        velocity = new Velocity(velocity.dx, if (velocity.dy > 0) MAX_SPEED else -MAX_SPEED)
-      if ((velocity.dy * velocity.dy + velocity.dx + velocity.dx) > MAX_SPEED * MAX_SPEED) {
-        velocity = velocity.normalize * MAX_SPEED
-      }
+      velocity = limitToMaxSpeed(velocity, MAX_SPEED)
     })
-
     if (!velocity.stationary) {
       keysHeld.foreach(hk => {
         val kh: KeyInfo = hk._2
-        if (!kh.held && kh.ticksHeld >= Square.TICKS_TILL_SLOW_DOWN) {
+        if (!kh.held && kh.ticksHeld >= Player.TICKS_TILL_SLOW_DOWN) {
           velocity = velocity.scaleAccelerate(hk._1, 1 - (delta * (1 - DECELERATION_FACTOR_PER_TICK)))
         }
         if (velocity.stationaryInDirection(hk._1))
@@ -76,13 +70,47 @@ class Square(private val gp: GeoPanel,
 
     fireCountdown -= delta
     if (fire && fireCountdown <= 0) {
-      val dif = firingTarget - position
-      gp.addEntity(new Bullet(gp, new Velocity(dif.x, dif.y).normalize * Bullet.SPEED, position))
+      val dxdy: GPoint = firingTarget - position
+      gp.addEntity(new Bullet(gp, new Velocity(dxdy.x, dxdy.y).normalize * Bullet.SPEED, position))
       fireCountdown = FIRE_DELAY
     }
 
-    position += velocity
+    position = nextPosition(position, velocity)
   }
+
+  private def nextPosition(p: GPoint, v: Velocity): GPoint = {
+    val maybeNextP = p + v
+    val windowWidth = gp.getWidth.toDouble
+    val windowHeight = gp.getHeight.toDouble
+    if (maybeNextP.x >= 0 && maybeNextP.y >= 0 && maybeNextP.x <= windowWidth && maybeNextP.y <= windowHeight)
+      return maybeNextP
+    val nextX: Double = maybeNextP.x match {
+      case x if x < 0 => windowWidth - x
+      case x if x > windowWidth => x - windowWidth
+      case x => x
+    }
+    val nextY: Double = maybeNextP.y match {
+      case y if y < 0 => windowHeight - y
+      case y if y > windowHeight => y - windowHeight
+      case y => y
+    }
+    new GPoint(nextX, nextY)
+  }
+
+
+  def limitToMaxSpeed(vel: Velocity, maxSpeed: Double): Velocity = {
+    var newVel: Velocity = vel
+    if (math.abs(newVel.dx) > maxSpeed)
+      newVel = new Velocity(if (newVel.dx > 0) maxSpeed else -maxSpeed, newVel.dy)
+    if (math.abs(velocity.dy) > maxSpeed)
+      newVel = new Velocity(velocity.dx, if (velocity.dy > 0) maxSpeed else -maxSpeed)
+    if ((newVel.dy * newVel.dy + newVel.dx + newVel.dx) > maxSpeed * maxSpeed) {
+      newVel = newVel.normalize * maxSpeed
+    }
+    newVel
+  }
+
+  override def shouldLive: Boolean = true
 
   override def render(g: Graphics2D): Unit = {
     g.drawRect(math.round(position.x - 10).toInt, math.round(position.y - 10).toInt, 20, 20)
@@ -97,7 +125,7 @@ class Square(private val gp: GeoPanel,
   }
 }
 
-object Square {
+object Player {
   val MAX_SPEED = 5
   val ACCELERATION_PER_TICK = 0.12 // Linear
   val DECELERATION_FACTOR_PER_TICK = 0.98 // Non-linear
