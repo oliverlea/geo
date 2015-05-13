@@ -19,29 +19,29 @@ class Square(private val gp: GeoPanel,
 
   private var velocity = initialVelocity
 
-  private var fire = false
-  private var firingDirection = new Velocity(0, 0)
+	private var fire = false
+  private var firingTarget = new GPoint(0, 0)
   private var fireCountdown: Double = 0
 
-  private var keysHeld = Map(
-    Direction.UP -> new KeyInfo(false, 0),
-    Direction.LEFT -> new KeyInfo(false, 0),
-    Direction.DOWN -> new KeyInfo(false, 0),
-    Direction.RIGHT -> new KeyInfo(false, 0)
-  )
-  gp.am.put(KeyEvent.VK_W, () => pressedDirection(Direction.UP))
-  gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true), () => releasedDirection(Direction.UP))
-  gp.am.put(KeyEvent.VK_A, () => pressedDirection(Direction.LEFT))
-  gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true), () => releasedDirection(Direction.LEFT))
-  gp.am.put(KeyEvent.VK_S, () => pressedDirection(Direction.DOWN))
-  gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true), () => releasedDirection(Direction.DOWN))
-  gp.am.put(KeyEvent.VK_D, () => pressedDirection(Direction.RIGHT))
-  gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true), () => releasedDirection(Direction.RIGHT))
-  gp.am.put(KeyEvent.VK_SPACE, () => fire = true)
+	private var keysHeld = Map(
+		Direction.UP -> new KeyInfo(false, 0),
+		Direction.LEFT -> new KeyInfo(false, 0),
+		Direction.DOWN -> new KeyInfo(false, 0),
+		Direction.RIGHT -> new KeyInfo(false, 0)
+	)
+	gp.am.put(KeyEvent.VK_W, () => pressedDirection(Direction.UP))
+	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true), () => releasedDirection(Direction.UP))
+	gp.am.put(KeyEvent.VK_A, () => pressedDirection(Direction.LEFT))
+	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true), () => releasedDirection(Direction.LEFT))
+	gp.am.put(KeyEvent.VK_S, () => pressedDirection(Direction.DOWN))
+	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true), () => releasedDirection(Direction.DOWN))
+	gp.am.put(KeyEvent.VK_D, () => pressedDirection(Direction.RIGHT))
+	gp.am.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true), () => releasedDirection(Direction.RIGHT))
+//	gp.am.put(KeyEvent.VK_SPACE, () => fire = true)
 
   gp.addMouseHandler((coordinates, held) => {
     fire = held
-    if (held) firingDirection = new Velocity(coordinates.x, coordinates.y)
+    if (held) firingTarget = new GPoint(coordinates.x, coordinates.y)
   })
 
   private implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
@@ -77,7 +77,8 @@ class Square(private val gp: GeoPanel,
 
     fireCountdown -= delta
     if (fire && fireCountdown <= 0) {
-      gp.addEntity(new Bullet(gp, firingDirection.normalize * Bullet.SPEED, position))
+      val dif = firingTarget - position
+      gp.addEntity(new Bullet(gp, new Velocity(dif.x, dif.y).normalize * Bullet.SPEED, position))
       fireCountdown = FIRE_DELAY
     }
 

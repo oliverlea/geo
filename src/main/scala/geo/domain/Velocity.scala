@@ -16,6 +16,8 @@ class Velocity(val dx: Double, val dy: Double) {
 
   def *(f: Double): Velocity = new Velocity(dx * f, dy * f)
 
+  def *(f: (Double, Double)): Velocity = new Velocity(dx * f._1, dy * f._2)
+
   def scaleAccelerate(dir: Direction.Value, factor: Double): Velocity = {
     val newX: Double = if (dir != Direction.LEFT && dir != Direction.RIGHT) dx else dx match {
       case _ if dx > 0 => if ((dx * factor) > 0) dx * factor else 0
@@ -56,7 +58,10 @@ class Velocity(val dx: Double, val dy: Double) {
     new Velocity(dx / magnitude, dy / magnitude)
   }
 
-  def *(f: (Double, Double)): Velocity = new Velocity(dx * f._1, dy * f._2)
+  def floor: Velocity = {
+//    val ddx = math.ceil()
+    new Velocity(0, 0)
+  }
 
   override def toString = s"[dx: $dx; dy: $dy]"
 }

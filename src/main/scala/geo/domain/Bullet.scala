@@ -26,6 +26,6 @@ class Bullet(private val gp: GeoPanel,
 }
 
 object Bullet {
-  val SPEED = 7
+  val SPEED = 7.0
   val SIZE = 3
 }

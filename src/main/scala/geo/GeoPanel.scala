@@ -43,6 +43,14 @@ class GeoPanel extends JPanel {
   })
 
   addMouseListener(new MouseAdapter {
+
+    override def mousePressed(e: MouseEvent): Unit = {
+      if (SwingUtilities.isLeftMouseButton(e)) {
+        val mousePosition = new GPoint(e.getX, e.getY)
+        mouseHandlers.foreach(_(mousePosition, true))
+      }
+    }
+
     override def mouseReleased(e: MouseEvent): Unit = {
       if (SwingUtilities.isLeftMouseButton(e)) {
         val mousePosition = new GPoint(e.getX, e.getY)
