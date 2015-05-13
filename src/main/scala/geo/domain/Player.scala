@@ -79,22 +79,18 @@ class Player(private val gp: GeoPanel,
   }
 
   private def nextPosition(p: GPoint, v: Velocity): GPoint = {
+    def wrap(x: Double, bound: Double): Double = x match {
+      case y if x < 0 => bound - y
+      case y if x > bound => y - bound
+      case y => y
+    }
     val maybeNextP = p + v
     val windowWidth = gp.getWidth.toDouble
     val windowHeight = gp.getHeight.toDouble
     if (maybeNextP.x >= 0 && maybeNextP.y >= 0 && maybeNextP.x <= windowWidth && maybeNextP.y <= windowHeight)
-      return maybeNextP
-    val nextX: Double = maybeNextP.x match {
-      case x if x < 0 => windowWidth - x
-      case x if x > windowWidth => x - windowWidth
-      case x => x
-    }
-    val nextY: Double = maybeNextP.y match {
-      case y if y < 0 => windowHeight - y
-      case y if y > windowHeight => y - windowHeight
-      case y => y
-    }
-    new GPoint(nextX, nextY)
+      maybeNextP
+    else
+      new GPoint(wrap(maybeNextP.x, windowWidth), wrap(maybeNextP.y, windowHeight))
   }
 
 
