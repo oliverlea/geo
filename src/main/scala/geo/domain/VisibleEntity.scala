@@ -13,5 +13,6 @@ abstract class VisibleEntity(private val gp: GeoPanel,
   def visible: Boolean = {
     position.x >= 0 && position.y >= 0 && position.x <= gp.getWidth && position.y <= gp.getHeight
   }
+
   def render(g: Graphics2D): Unit
 }

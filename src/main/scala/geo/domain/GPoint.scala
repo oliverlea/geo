@@ -6,7 +6,7 @@ import java.awt.Point
  * @author Paulius Imbrasas
  * @author Oliver Lea
  */
-class GPoint(val x: Double, val y: Double) {
+class GPoint(val x: Double, val y: Double) extends Serializable {
 
   def this(p: Point) = this(p.getX, p.getY)
 
