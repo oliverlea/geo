@@ -5,7 +5,7 @@ import java.awt.{Graphics, Graphics2D}
 import javax.swing.{JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
-import geo.domain.spawner.EnemySpawner
+import geo.domain.spawner.{VisibleEntitySpawner, EnemySpawner}
 
 import scala.compat.Platform
 import scala.util.Random
@@ -47,14 +47,12 @@ class GeoPanel extends JPanel {
   })
 
   addMouseListener(new MouseAdapter {
-
     override def mousePressed(e: MouseEvent): Unit = {
       if (SwingUtilities.isLeftMouseButton(e)) {
         val mousePosition = new GPoint(e.getX, e.getY)
         mouseHandlers.foreach(_(mousePosition, true))
       }
     }
-
     override def mouseReleased(e: MouseEvent): Unit = {
       if (SwingUtilities.isLeftMouseButton(e)) {
         val mousePosition = new GPoint(e.getX, e.getY)
@@ -69,7 +67,9 @@ class GeoPanel extends JPanel {
   private var visibleEntities: List[VisibleEntity] = List(
     new Player(this, new Velocity(0, 0), new GPoint(20, 20))
   )
-  private val enemySpawner = new EnemySpawner(this)
+  private val visibleEntitySpawners: List[VisibleEntitySpawner[_ <: VisibleEntity]] = List(
+    new EnemySpawner(this)
+  )
 
   def tick(delta: Double) = {
     visibleEntities.foreach(_.tick(delta))
@@ -78,12 +78,14 @@ class GeoPanel extends JPanel {
   }
 
   def generateVisibleEntities(delta: Double): List[VisibleEntity] = {
-    var visibleEntities = List[VisibleEntity]()
+    var newEntities = List[VisibleEntity]()
     val r: Random = new Random(Platform.currentTime)
-    val enemy = enemySpawner.spawnVisibleEntity(delta, r)
-    if (enemy.isDefined)
-      visibleEntities = enemy.get :: visibleEntities
-    visibleEntities
+    for (s <- visibleEntitySpawners) {
+      val ve = s.spawnVisibleEntity(delta, r)
+      if (ve.isDefined)
+        newEntities = ve.get :: newEntities
+    }
+    newEntities
   }
 
   def addEntity(entity: VisibleEntity): Unit = {
@@ -96,6 +98,7 @@ class GeoPanel extends JPanel {
 
   override def paintComponent(g: Graphics): Unit = {
     super.paintComponent(g)
-    visibleEntities.foreach(_.render(g.asInstanceOf[Graphics2D]))
+    val g2d = g.asInstanceOf[Graphics2D]
+    visibleEntities.foreach(_.render(g2d))
   }
 }
