@@ -5,6 +5,7 @@ import java.awt.{Graphics, Graphics2D}
 import javax.swing.{JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
+import geo.domain.spawner.EnemySpawner
 
 import scala.compat.Platform
 import scala.util.Random
@@ -68,36 +69,21 @@ class GeoPanel extends JPanel {
   private var visibleEntities: List[VisibleEntity] = List(
     new Player(this, new Velocity(0, 0), new GPoint(20, 20))
   )
+  private val enemySpawner = new EnemySpawner(this)
 
   def tick(delta: Double) = {
     visibleEntities.foreach(_.tick(delta))
     visibleEntities = visibleEntities.filter(_.shouldLive)
-    visibleEntities = generateVisibleEntities ::: visibleEntities
+    visibleEntities = generateVisibleEntities(delta) ::: visibleEntities
   }
 
-  def generateVisibleEntities: List[VisibleEntity] = {
-    def randomEdgePoint(r: Random): GPoint = {
-      val xAxis = r.nextBoolean()
-      val inverse = r.nextBoolean()
-      if (xAxis)
-        new GPoint(r.nextDouble() * getWidth, if (inverse) getHeight else 0)
-      else
-        new GPoint(if (inverse) getWidth else 0, r.nextDouble() * getHeight)
-    }
-    def randomDirection(r: Random): Velocity = {
-      val dx = r.nextDouble()
-      val dy = r.nextDouble()
-      new Velocity(dx, dy).normalize
-    }
-    def generateEnemies(r: Random): List[Enemy] = {
-      var es: List[Enemy] = List()
-      for (i <- 0 until 1) {
-        es = new Enemy(this, randomDirection(r) * Enemy.SPEED, randomEdgePoint(r)) :: es
-      }
-      es
-    }
+  def generateVisibleEntities(delta: Double): List[VisibleEntity] = {
+    var visibleEntities = List[VisibleEntity]()
     val r: Random = new Random(Platform.currentTime)
-    generateEnemies(r)
+    val enemy = enemySpawner.spawnVisibleEntity(delta, r)
+    if (enemy.isDefined)
+      visibleEntities = enemy.get :: visibleEntities
+    visibleEntities
   }
 
   def addEntity(entity: VisibleEntity): Unit = {
