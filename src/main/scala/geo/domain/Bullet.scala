@@ -24,8 +24,8 @@ class Bullet(private val gp: GeoPanel,
 
   override def render(g: Graphics2D): Unit = {
     g.drawOval(
-      math.round(position.x).toInt,
-      math.round(position.y).toInt,
+      position.roundX,
+      position.roundY,
       Bullet.SIZE,
       Bullet.SIZE
     )

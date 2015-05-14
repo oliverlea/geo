@@ -30,5 +30,8 @@ class GPoint(val x: Double, val y: Double) {
     new GPoint(x - a.dx, y - a.dy)
   }
 
+  def roundX: Int = math.round(x).toInt
+  def roundY: Int = math.round(y).toInt
+
   override def toString: String = s"[$x, $y]"
 }

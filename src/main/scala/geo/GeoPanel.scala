@@ -6,6 +6,9 @@ import javax.swing.{JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
 
+import scala.compat.Platform
+import scala.util.Random
+
 /**
  * @author Oliver Lea
  */
@@ -69,6 +72,32 @@ class GeoPanel extends JPanel {
   def tick(delta: Double) = {
     visibleEntities.foreach(_.tick(delta))
     visibleEntities = visibleEntities.filter(_.shouldLive)
+    visibleEntities = generateVisibleEntities ::: visibleEntities
+  }
+
+  def generateVisibleEntities: List[VisibleEntity] = {
+    def randomEdgePoint(r: Random): GPoint = {
+      val xAxis = r.nextBoolean()
+      val inverse = r.nextBoolean()
+      if (xAxis)
+        new GPoint(r.nextDouble() * getWidth, if (inverse) getHeight else 0)
+      else
+        new GPoint(if (inverse) getWidth else 0, r.nextDouble() * getHeight)
+    }
+    def randomDirection(r: Random): Velocity = {
+      val dx = r.nextDouble()
+      val dy = r.nextDouble()
+      new Velocity(dx, dy).normalize
+    }
+    def generateEnemies(r: Random): List[Enemy] = {
+      var es: List[Enemy] = List()
+      for (i <- 0 until 1) {
+        es = new Enemy(this, randomDirection(r) * Enemy.SPEED, randomEdgePoint(r)) :: es
+      }
+      es
+    }
+    val r: Random = new Random(Platform.currentTime)
+    generateEnemies(r)
   }
 
   def addEntity(entity: VisibleEntity): Unit = {
