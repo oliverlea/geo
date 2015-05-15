@@ -9,5 +9,5 @@ import scala.util.Random
  * @author Oliver Lea
  */
 abstract class VisibleEntitySpawner[T <: VisibleEntity](private val gp: GeoPanel) {
-  def spawnVisibleEntity(delta: Double, r: Random): Option[T]
+  def spawnVisibleEntities(delta: Double, r: Random): List[T]
 }

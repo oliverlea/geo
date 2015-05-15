@@ -74,16 +74,15 @@ class GeoPanel extends JPanel {
   def tick(delta: Double) = {
     visibleEntities.foreach(_.tick(delta))
     visibleEntities = visibleEntities.filter(_.shouldLive)
-    visibleEntities = generateVisibleEntities(delta) ::: visibleEntities
+    visibleEntities = generateVisibleEntities(visibleEntitySpawners, delta) ::: visibleEntities
   }
 
-  def generateVisibleEntities(delta: Double): List[VisibleEntity] = {
-    var newEntities = List[VisibleEntity]()
+  def generateVisibleEntities(ves: Seq[VisibleEntitySpawner[_ <: VisibleEntity]],
+                              delta: Double): List[VisibleEntity] = {
     val r: Random = new Random(Platform.currentTime)
-    for (s <- visibleEntitySpawners) {
-      val ve = s.spawnVisibleEntity(delta, r)
-      if (ve.isDefined)
-        newEntities = ve.get :: newEntities
+    var newEntities = List[VisibleEntity]()
+    for (s <- ves) {
+      newEntities = s.spawnVisibleEntities(delta, r) ::: newEntities
     }
     newEntities
   }

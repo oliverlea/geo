@@ -13,14 +13,14 @@ class EnemySpawner(private val gp: GeoPanel) extends VisibleEntitySpawner[Enemy]
 
   private var tickCount: Double = 0
 
-  override def spawnVisibleEntity(delta: Double, r: Random): Option[Enemy] = {
+  override def spawnVisibleEntities(delta: Double, r: Random): List[Enemy] = {
     if (tickCount >= TICKS_PER_GENERATE) {
       tickCount = 0
       val randomEdgeP = randomEdgePoint(r)
-      Option(new Enemy(gp, randomDirectionFromPoint(r, randomEdgeP).normalize * Enemy.SPEED, randomEdgeP))
+      List(new Enemy(gp, randomDirectionFromPoint(r, randomEdgeP).normalize * Enemy.SPEED, randomEdgeP))
     } else {
       tickCount += delta
-      None
+      List()
     }
   }
 
