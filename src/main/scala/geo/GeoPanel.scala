@@ -6,7 +6,7 @@ import javax.swing.{JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
 import geo.domain.spawner.VisibleEntitySpawner
-import geo.network.{Client, Server}
+import geo.network.{NetworkHelper, ServerMode}
 
 import scala.compat.Platform
 import scala.util.Random
@@ -66,12 +66,7 @@ class GeoPanel(val serverMode: Boolean) extends JPanel {
 
   type MPPlayer = GPoint
 
-  lazy val server = new Server[MPPlayer]
-  lazy val client = new Client[MPPlayer]
-
-  if (serverMode) {
-    server.run()
-  }
+  val network = new NetworkHelper[MPPlayer](ServerMode())
 
   // Members and methods
   private var mouseHandlers: List[MouseHandler] = List()

@@ -8,16 +8,16 @@ import java.net.Socket
  */
 abstract class Networker[A] {
 
-  private def read(in: ObjectInputStream): Option[A] = try {
+  private def read(in: ObjectInputStream): Reading = try {
     in.readObject() match {
-      case player: A => Option(player)
-      case _ => None
+      case data: A => Successful(data)
+      case _ => Empty()
     }
   } catch {
-    case _: IOException => None
+    case e: IOException => Failed(e)
   }
 
-  protected def receive(socket: Socket): Option[A] = {
+  protected def receive(socket: Socket): Reading = {
     println("Receiving")
     val in = new ObjectInputStream(socket.getInputStream)
     val resp = read(in)
@@ -35,3 +35,11 @@ abstract class Networker[A] {
     out.close()
   }
 }
+
+trait Reading
+
+case class Successful[A](data: A) extends Reading
+
+case class Failed(e: Throwable) extends Reading
+
+case class Empty() extends Reading

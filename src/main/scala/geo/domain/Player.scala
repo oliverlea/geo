@@ -51,6 +51,8 @@ class Player(private val gp: GeoPanel,
     }
   }
 
+  private var lastPosition: GPoint = position
+
   override def tick(delta: Double): Unit = {
     keysHeld.filter(_._2.held).foreach(kh => {
       velocity = velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
@@ -79,8 +81,10 @@ class Player(private val gp: GeoPanel,
     position = nextPosition(position, velocity)
 
     networkCountdown -= delta
-    if (networkCountdown <= 0) {
-      gp.client.send(position)
+    if (networkCountdown <= 0 && position != lastPosition) {
+      gp.network.send(position)
+      lastPosition = position
+      networkCountdown = NETWORK_DELAY
     }
   }
 
@@ -134,5 +138,5 @@ object Player {
   val DECELERATION_FACTOR_PER_TICK = 0.98 // Non-linear
   val TICKS_TILL_SLOW_DOWN = 10
   val FIRE_DELAY = 5 // ticks
-  val NETWORK_DELAY = 50
+  val NETWORK_DELAY = 20
 }

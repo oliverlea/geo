@@ -33,5 +33,10 @@ class GPoint(val x: Double, val y: Double) extends Serializable {
   def roundX: Int = math.round(x).toInt
   def roundY: Int = math.round(y).toInt
 
+  override def equals(o: Any): Boolean = o match {
+    case o: GPoint => o.x == this.x && o.y == this.y
+    case _ => false
+  }
+
   override def toString: String = s"[$x, $y]"
 }
