@@ -22,6 +22,7 @@ class Player(private val gp: GeoPanel,
   private var fire = false
   private var firingTarget = new GPoint(0, 0)
   private var fireCountdown: Double = 0
+  private var networkCountdown: Double = 0
 
   private var keysHeld = Map(
     Direction.UP -> new KeyInfo(false, 0),
@@ -76,6 +77,11 @@ class Player(private val gp: GeoPanel,
     }
 
     position = nextPosition(position, velocity)
+
+    networkCountdown -= delta
+    if (networkCountdown <= 0) {
+      gp.client.send(position)
+    }
   }
 
   private def nextPosition(p: GPoint, v: Velocity): GPoint = {
@@ -109,7 +115,7 @@ class Player(private val gp: GeoPanel,
   override def shouldLive: Boolean = true
 
   override def render(g: Graphics2D): Unit = {
-    g.drawRect(math.round(position.x - 10).toInt, math.round(position.y - 10).toInt, 20, 20)
+    g.drawRect(position.roundX - SIZE / 10, position.roundY - SIZE / 10, SIZE, SIZE)
   }
 
   def pressedDirection(direction: Direction.Value): Unit = {
@@ -122,9 +128,11 @@ class Player(private val gp: GeoPanel,
 }
 
 object Player {
+  val SIZE = 20
   val MAX_SPEED = 5
   val ACCELERATION_PER_TICK = 0.12 // Linear
   val DECELERATION_FACTOR_PER_TICK = 0.98 // Non-linear
   val TICKS_TILL_SLOW_DOWN = 10
   val FIRE_DELAY = 5 // ticks
+  val NETWORK_DELAY = 50
 }

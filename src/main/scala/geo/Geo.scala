@@ -56,11 +56,12 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 object Geo {
 
   def main(args: Array[String]): Unit = {
+    val serverMode = if (args.contains("--server")) true else false
     SwingUtilities.invokeLater(new Runnable {
       override def run(): Unit = {
-        val geoPanel = new GeoPanel
+        val geoPanel = new GeoPanel(serverMode)
         val geo = new Geo(geoPanel)
-        geo.setTitle("Geo")
+        geo.setTitle(s"Geo ${if (serverMode) "Server" else "Client"}")
         geo.setMinimumSize(new Dimension(800, 600))
         geo.add(geoPanel)
         geo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)

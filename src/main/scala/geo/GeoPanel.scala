@@ -5,7 +5,8 @@ import java.awt.{Graphics, Graphics2D}
 import javax.swing.{JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
-import geo.domain.spawner.{VisibleEntitySpawner, EnemySpawner}
+import geo.domain.spawner.VisibleEntitySpawner
+import geo.network.{Client, Server}
 
 import scala.compat.Platform
 import scala.util.Random
@@ -13,7 +14,7 @@ import scala.util.Random
 /**
  * @author Oliver Lea
  */
-class GeoPanel extends JPanel {
+class GeoPanel(val serverMode: Boolean) extends JPanel {
 
   // constructor
 
@@ -47,12 +48,14 @@ class GeoPanel extends JPanel {
   })
 
   addMouseListener(new MouseAdapter {
+
     override def mousePressed(e: MouseEvent): Unit = {
       if (SwingUtilities.isLeftMouseButton(e)) {
         val mousePosition = new GPoint(e.getX, e.getY)
         mouseHandlers.foreach(_(mousePosition, true))
       }
     }
+
     override def mouseReleased(e: MouseEvent): Unit = {
       if (SwingUtilities.isLeftMouseButton(e)) {
         val mousePosition = new GPoint(e.getX, e.getY)
@@ -61,6 +64,15 @@ class GeoPanel extends JPanel {
     }
   })
 
+  type MPPlayer = GPoint
+
+  lazy val server = new Server[MPPlayer]
+  lazy val client = new Client[MPPlayer]
+
+  if (serverMode) {
+    server.run()
+  }
+
   // Members and methods
   private var mouseHandlers: List[MouseHandler] = List()
 
@@ -68,7 +80,7 @@ class GeoPanel extends JPanel {
     new Player(this, new Velocity(0, 0), new GPoint(20, 20))
   )
   private val visibleEntitySpawners: List[VisibleEntitySpawner[_ <: VisibleEntity]] = List(
-    new EnemySpawner(this)
+    //    new EnemySpawner(this)
   )
 
   def tick(delta: Double) = {

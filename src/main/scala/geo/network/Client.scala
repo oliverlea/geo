@@ -1,28 +1,30 @@
 package geo.network
 
-import java.io.{ObjectInputStream, ObjectOutputStream}
 import java.net.Socket
 
-import geo.domain.GPoint
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * @author Paulius Imbrasas
  */
-object Client {
+class Client[A] extends Networker[A] {
 
-  def ping = {
-    val socket = new Socket("localhost", 1201)
-    val out = new ObjectOutputStream(socket.getOutputStream)
-    val in = new ObjectInputStream(socket.getInputStream)
+  val socket = new Socket("localhost", 1201)
 
-    out.writeObject(new GPoint(0, 1))
-
-    out.close()
-    in.close()
-    socket.close()
+  def send(newPacket: A): Unit = Future {
+    super.send(newPacket)(socket)
   }
 
-  def main(args: Array[String]) {
-    ping
-  }
+  //  def send(player: A) = {
+  //    val socket = new Socket("localhost", 1201)
+  //    val out = new ObjectOutputStream(socket.getOutputStream)
+  //    val in = new ObjectInputStream(socket.getInputStream)
+  //
+  //    out.writeObject(player)
+  //
+  //    out.close()
+  //    in.close()
+  //    socket.close()
+  //  }
 }
