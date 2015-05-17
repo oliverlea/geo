@@ -29,12 +29,10 @@ abstract class Networker {
     out.writeObject(packet)
   }
 
-  def receive(in: ObjectInputStream): Option[Packet] = {
-    read(in) match {
-      case Successful(data) => Option(data)
-      case Failed(e) => throw e
-      case Empty() => None
-    }
+  def receive(in: ObjectInputStream): Option[Packet] = read(in) match {
+    case Successful(data) => Option(data)
+    case Failed(e) => throw e
+    case Empty() => None
   }
 }
 
@@ -43,11 +41,7 @@ package object Networking {
   type PacketOut = () => Packet
 
   trait Reading
-
   case class Successful(data: Packet) extends Reading
-
   case class Failed(e: Throwable) extends Reading
-
   case class Empty() extends Reading
-
 }

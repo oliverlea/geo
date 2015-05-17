@@ -42,6 +42,11 @@ class Multiplayer(val player: Player, val nplayer: NPlayer) {
     }
   }
 
+  /**
+   * Handles a packet when it comes in from the other player
+   *
+   * @param o maybe a packet, if reading was successful
+   */
   def in(o: Option[Packet]): Unit = {
     nplayer.position = o match {
       case Some(packet) => packet.position
@@ -49,6 +54,9 @@ class Multiplayer(val player: Player, val nplayer: NPlayer) {
     }
   }
 
+  /**
+   * Handles sending out a packet to the other player
+   */
   def out(): Packet = new Packet(player.position, player.velocity, Multiplayer.Identifier)
 }
 
