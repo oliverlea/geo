@@ -6,6 +6,7 @@ import javax.swing.{JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
 import geo.domain.spawner.{VisibleEntitySpawner, EnemySpawner}
+import geo.structure.QuadTree
 
 import scala.compat.Platform
 import scala.util.Random
@@ -75,6 +76,21 @@ class GeoPanel extends JPanel {
     visibleEntities.foreach(_.tick(delta))
     visibleEntities = visibleEntities.filter(_.shouldLive)
     visibleEntities = generateVisibleEntities(visibleEntitySpawners, delta) ::: visibleEntities
+    val qt = new QuadTree[VisibleEntity](0, 0, getWidth, getHeight)
+    for (ve <- visibleEntities) {
+      qt.set(ve.position, ve)
+    }
+    for (nearElements <- qt.getElements) {
+      for (e <- nearElements) {
+        for (e2 <- nearElements) {
+          if (e != e2) {
+            if (e.bounds.intersects(e2.bounds)) {
+              println("INTERSECT")
+            }
+          }
+        }
+      }
+    }
   }
 
   def generateVisibleEntities(ves: Seq[VisibleEntitySpawner[_ <: VisibleEntity]],
@@ -99,5 +115,16 @@ class GeoPanel extends JPanel {
     super.paintComponent(g)
     val g2d = g.asInstanceOf[Graphics2D]
     visibleEntities.foreach(_.render(g2d))
+    val qt = new QuadTree[VisibleEntity](0, 0, getWidth, getHeight)
+    for (ve <- visibleEntities) {
+      qt.set(ve.position, ve)
+    }
+    true
+    for (leaf <- qt.getLeaves) {
+      g.drawLine(leaf.x.toInt, leaf.y.toInt, (leaf.x + leaf.width).toInt, leaf.y.toInt)
+      g.drawLine(leaf.x.toInt, leaf.y.toInt, leaf.x.toInt, (leaf.y + leaf.height).toInt)
+      g.drawLine(leaf.x.toInt, (leaf.y + leaf.height).toInt, (leaf.x + leaf.width).toInt, (leaf.y + leaf.height).toInt)
+      g.drawLine((leaf.x + leaf.width).toInt, (leaf.y + leaf.height).toInt, (leaf.x + leaf.width).toInt, leaf.y.toInt)
+    }
   }
 }

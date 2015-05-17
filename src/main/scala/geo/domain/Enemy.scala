@@ -1,6 +1,6 @@
 package geo.domain
 
-import java.awt.Graphics2D
+import java.awt.{Rectangle, Graphics2D}
 
 import geo.GeoPanel
 import geo.domain.Enemy.SIZE
@@ -10,14 +10,15 @@ import geo.domain.Enemy.SIZE
  */
 class Enemy(private val gp: GeoPanel,
             private var velocity: Velocity,
-            private var position: GPoint) extends VisibleEntity(gp, velocity, position) {
+            var position: GPoint) extends VisibleEntity(gp, velocity) {
 
   override def render(g: Graphics2D): Unit = {
+    val b = bounds
     g.drawOval(
-      position.roundX - SIZE / 2,
-      position.roundY - SIZE / 2,
-      SIZE,
-      SIZE
+      b.x,
+      b.y,
+      b.width,
+      b.height
     )
   }
 
@@ -28,6 +29,13 @@ class Enemy(private val gp: GeoPanel,
   private def nextPosition(p: GPoint, v: Velocity): GPoint = p + v
 
   override def shouldLive: Boolean = visible
+
+  override def bounds = new Rectangle(
+    position.roundX - SIZE / 2,
+    position.roundY - SIZE / 2,
+    SIZE,
+    SIZE
+  )
 }
 
 object Enemy {

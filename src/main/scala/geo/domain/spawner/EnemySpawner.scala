@@ -43,5 +43,5 @@ class EnemySpawner(private val gp: GeoPanel) extends VisibleEntitySpawner[Enemy]
 }
 
 object EnemySpawner {
-  val TICKS_PER_GENERATE = 5
+  val TICKS_PER_GENERATE = 10
 }

@@ -1,15 +1,16 @@
 package geo.domain
 
-import java.awt.Graphics2D
+import java.awt.{Rectangle, Graphics2D}
 
 import geo.GeoPanel
+import geo.domain.Bullet.SIZE
 
 /**
  * @author Paulius Imbrasas
  */
 class Bullet(private val gp: GeoPanel,
              private val velocity: Velocity,
-             private var position: GPoint) extends VisibleEntity(gp, velocity, position) {
+             var position: GPoint) extends VisibleEntity(gp, velocity) {
 
 
   override def tick(delta: Double): Unit = {
@@ -23,13 +24,21 @@ class Bullet(private val gp: GeoPanel,
   override def shouldLive: Boolean = visible
 
   override def render(g: Graphics2D): Unit = {
+    val b = bounds
     g.drawOval(
-      position.roundX,
-      position.roundY,
-      Bullet.SIZE,
-      Bullet.SIZE
+      b.x,
+      b.y,
+      b.width,
+      b.height
     )
   }
+
+  override def bounds = new Rectangle(
+    position.roundX - SIZE / 2,
+    position.roundY - SIZE / 2,
+    SIZE,
+    SIZE
+  )
 }
 
 object Bullet {

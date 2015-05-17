@@ -1,6 +1,6 @@
 package geo.domain
 
-import java.awt.Graphics2D
+import java.awt.{Rectangle, Graphics2D}
 import java.awt.event.{ActionEvent, KeyEvent}
 import javax.swing.{AbstractAction, Action, KeyStroke}
 
@@ -13,7 +13,7 @@ import geo.domain.Player._
  */
 class Player(private val gp: GeoPanel,
              private val initialVelocity: Velocity,
-             private var position: GPoint) extends VisibleEntity(gp, initialVelocity, position) {
+             var position: GPoint) extends VisibleEntity(gp, initialVelocity) {
 
   // Constructor
 
@@ -68,14 +68,18 @@ class Player(private val gp: GeoPanel,
       })
     }
 
+    updateFire(delta)
+
+    position = nextPosition(position, velocity)
+  }
+
+  private def updateFire(delta: Double): Unit = {
     fireCountdown -= delta
     if (fire && fireCountdown <= 0) {
       val dxdy: GPoint = firingTarget - position
       gp.addEntity(new Bullet(gp, new Velocity(dxdy.x, dxdy.y).normalize * Bullet.SPEED, position))
       fireCountdown = FIRE_DELAY
     }
-
-    position = nextPosition(position, velocity)
   }
 
   private def nextPosition(p: GPoint, v: Velocity): GPoint = {
@@ -109,8 +113,11 @@ class Player(private val gp: GeoPanel,
   override def shouldLive: Boolean = true
 
   override def render(g: Graphics2D): Unit = {
-    g.drawRect(math.round(position.x - 10).toInt, math.round(position.y - 10).toInt, 20, 20)
+    val b = bounds
+    g.drawRect(b.x, b.y, b.width, b.height)
   }
+
+  override def bounds = new Rectangle(math.round(position.x - 10).toInt, math.round(position.y - 10).toInt, 20, 20)
 
   def pressedDirection(direction: Direction.Value): Unit = {
     keysHeld += (direction -> new KeyInfo(true, 0))
