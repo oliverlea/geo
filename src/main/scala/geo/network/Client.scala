@@ -1,30 +1,41 @@
 package geo.network
 
+import java.io.ObjectOutputStream
 import java.net.Socket
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import geo.network.Networking.PacketOut
 
 /**
  * @author Paulius Imbrasas
  */
-class Client[A] extends Networker[A] {
+protected class Client(val out: PacketOut) extends Networker {
 
-  val socket = new Socket("localhost", 1201)
+  var socket: Option[Socket] = None
+  var ostream: ObjectOutputStream = _
+  var connected = false
 
-  def send(newPacket: A): Unit = Future {
-    super.send(newPacket)(socket)
+  def isConnected = connected
+
+  def send(): Unit = socket match {
+    case Some(s) => send(ostream, out())
+    case None => println("Socket closed")
   }
 
-  //  def send(player: A) = {
-  //    val socket = new Socket("localhost", 1201)
-  //    val out = new ObjectOutputStream(socket.getOutputStream)
-  //    val in = new ObjectInputStream(socket.getInputStream)
-  //
-  //    out.writeObject(player)
-  //
-  //    out.close()
-  //    in.close()
-  //    socket.close()
-  //  }
+  def connect(): Unit = try {
+    val s = new Socket("localhost", 1201)
+    ostream = new ObjectOutputStream(s.getOutputStream)
+    socket = Option(s)
+    connected = true
+  } catch {
+    case e: Exception => println(e.getMessage)
+  }
+
+  def disconnect(): Unit = socket match {
+    case Some(s) =>
+      ostream.close()
+      s.close()
+      connected = false
+    case None => println("Socket closed already")
+  }
+
 }

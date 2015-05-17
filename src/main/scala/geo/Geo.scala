@@ -23,7 +23,7 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
       var fps = lastFps + 1
 
       if (fpsTime > 1000) {
-        println(s"FPS: $fps")
+        setTitle(s"Geo $fps fps")
         fpsTime = 0
         fps = 0
       }
@@ -56,12 +56,10 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 object Geo {
 
   def main(args: Array[String]): Unit = {
-    val serverMode = if (args.contains("--server")) true else false
     SwingUtilities.invokeLater(new Runnable {
       override def run(): Unit = {
-        val geoPanel = new GeoPanel(serverMode)
+        val geoPanel = new GeoPanel
         val geo = new Geo(geoPanel)
-        geo.setTitle(s"Geo ${if (serverMode) "Server" else "Client"}")
         geo.setMinimumSize(new Dimension(800, 600))
         geo.add(geoPanel)
         geo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)

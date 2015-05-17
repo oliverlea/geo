@@ -13,11 +13,11 @@ import geo.domain.Player._
  */
 class Player(private val gp: GeoPanel,
              private val initialVelocity: Velocity,
-             private var position: GPoint) extends VisibleEntity(gp, initialVelocity, position) {
+             private var _position: GPoint) extends VisibleEntity(gp, initialVelocity, _position) {
 
   // Constructor
 
-  private var velocity = initialVelocity
+  private var _velocity = initialVelocity
 
   private var fire = false
   private var firingTarget = new GPoint(0, 0)
@@ -51,20 +51,22 @@ class Player(private val gp: GeoPanel,
     }
   }
 
-  private var lastPosition: GPoint = position
+  def position = _position
+
+  def velocity = _velocity
 
   override def tick(delta: Double): Unit = {
     keysHeld.filter(_._2.held).foreach(kh => {
-      velocity = velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
-      velocity = limitToMaxSpeed(velocity, MAX_SPEED)
+      _velocity = _velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
+      _velocity = limitToMaxSpeed(_velocity, MAX_SPEED)
     })
-    if (!velocity.stationary) {
+    if (!_velocity.stationary) {
       keysHeld.foreach(hk => {
         val kh: KeyInfo = hk._2
         if (!kh.held && kh.ticksHeld >= Player.TICKS_TILL_SLOW_DOWN) {
-          velocity = velocity.scaleAccelerate(hk._1, 1 - (delta * (1 - DECELERATION_FACTOR_PER_TICK)))
+          _velocity = _velocity.scaleAccelerate(hk._1, 1 - (delta * (1 - DECELERATION_FACTOR_PER_TICK)))
         }
-        if (velocity.stationaryInDirection(hk._1))
+        if (_velocity.stationaryInDirection(hk._1))
           keysHeld += hk._1 -> new KeyInfo(kh.held, 0)
         else
           keysHeld += hk._1 -> new KeyInfo(kh.held, kh.ticksHeld + 1)
@@ -73,19 +75,12 @@ class Player(private val gp: GeoPanel,
 
     fireCountdown -= delta
     if (fire && fireCountdown <= 0) {
-      val dxdy: GPoint = firingTarget - position
-      gp.addEntity(new Bullet(gp, new Velocity(dxdy.x, dxdy.y).normalize * Bullet.SPEED, position))
+      val dxdy: GPoint = firingTarget - _position
+      gp.addEntity(new Bullet(gp, new Velocity(dxdy.x, dxdy.y).normalize * Bullet.SPEED, _position))
       fireCountdown = FIRE_DELAY
     }
 
-    position = nextPosition(position, velocity)
-
-    networkCountdown -= delta
-    if (networkCountdown <= 0 && position != lastPosition) {
-      gp.network.send(position)
-      lastPosition = position
-      networkCountdown = NETWORK_DELAY
-    }
+    _position = nextPosition(_position, _velocity)
   }
 
   private def nextPosition(p: GPoint, v: Velocity): GPoint = {
@@ -108,8 +103,8 @@ class Player(private val gp: GeoPanel,
     var newVel: Velocity = vel
     if (math.abs(newVel.dx) > maxSpeed)
       newVel = new Velocity(if (newVel.dx > 0) maxSpeed else -maxSpeed, newVel.dy)
-    if (math.abs(velocity.dy) > maxSpeed)
-      newVel = new Velocity(velocity.dx, if (velocity.dy > 0) maxSpeed else -maxSpeed)
+    if (math.abs(_velocity.dy) > maxSpeed)
+      newVel = new Velocity(_velocity.dx, if (_velocity.dy > 0) maxSpeed else -maxSpeed)
     if ((newVel.dy * newVel.dy + newVel.dx + newVel.dx) > maxSpeed * maxSpeed) {
       newVel = newVel.normalize * maxSpeed
     }
@@ -119,7 +114,7 @@ class Player(private val gp: GeoPanel,
   override def shouldLive: Boolean = true
 
   override def render(g: Graphics2D): Unit = {
-    g.drawRect(position.roundX - SIZE / 10, position.roundY - SIZE / 10, SIZE, SIZE)
+    g.drawRect(_position.roundX - SIZE / 10, _position.roundY - SIZE / 10, SIZE, SIZE)
   }
 
   def pressedDirection(direction: Direction.Value): Unit = {

@@ -2,11 +2,11 @@ package geo
 
 import java.awt.event._
 import java.awt.{Graphics, Graphics2D}
-import javax.swing.{JPanel, KeyStroke, SwingUtilities}
+import javax.swing.{AbstractAction, JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
 import geo.domain.spawner.VisibleEntitySpawner
-import geo.network.{NetworkHelper, ServerMode}
+import geo.network._
 
 import scala.compat.Platform
 import scala.util.Random
@@ -14,7 +14,7 @@ import scala.util.Random
 /**
  * @author Oliver Lea
  */
-class GeoPanel(val serverMode: Boolean) extends JPanel {
+class GeoPanel extends JPanel {
 
   // constructor
 
@@ -32,11 +32,12 @@ class GeoPanel(val serverMode: Boolean) extends JPanel {
   im.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), KeyEvent.VK_D)
   im.put(D_RELEASED, D_RELEASED)
 
-  im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyEvent.VK_SPACE)
+  im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, 0), KeyEvent.VK_C)
 
   val am = getActionMap
 
   type MouseHandler = (GPoint, Boolean) => Unit
+
 
   addMouseMotionListener(new MouseMotionAdapter {
     override def mouseDragged(e: MouseEvent): Unit = {
@@ -64,15 +65,19 @@ class GeoPanel(val serverMode: Boolean) extends JPanel {
     }
   })
 
-  type MPPlayer = GPoint
-
-  val network = new NetworkHelper[MPPlayer](ServerMode())
-
   // Members and methods
   private var mouseHandlers: List[MouseHandler] = List()
 
+  val player = new Player(this, new Velocity(0, 0), new GPoint(20, 20))
+  val nplayer = new NPlayer(this, new Velocity(0, 0), new GPoint(0, 0))
+
+  val network = new Multiplayer(player, nplayer)
+  am.put(KeyEvent.VK_C, new AbstractAction() {
+    override def actionPerformed(e: ActionEvent): Unit = network.connect()
+  })
+
   private var visibleEntities: List[VisibleEntity] = List(
-    new Player(this, new Velocity(0, 0), new GPoint(20, 20))
+    player, nplayer
   )
   private val visibleEntitySpawners: List[VisibleEntitySpawner[_ <: VisibleEntity]] = List(
     //    new EnemySpawner(this)
@@ -82,11 +87,12 @@ class GeoPanel(val serverMode: Boolean) extends JPanel {
     visibleEntities.foreach(_.tick(delta))
     visibleEntities = visibleEntities.filter(_.shouldLive)
     visibleEntities = generateVisibleEntities(visibleEntitySpawners, delta) ::: visibleEntities
+    network.tick(delta)
   }
 
   def generateVisibleEntities(ves: Seq[VisibleEntitySpawner[_ <: VisibleEntity]],
                               delta: Double): List[VisibleEntity] = {
-    val r: Random = new Random(Platform.currentTime)
+    val r = new Random(Platform.currentTime)
     var newEntities = List[VisibleEntity]()
     for (s <- ves) {
       newEntities = s.spawnVisibleEntities(delta, r) ::: newEntities

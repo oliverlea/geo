@@ -9,9 +9,9 @@ import geo.GeoPanel
  */
 abstract class VisibleEntity(private val gp: GeoPanel,
                              private val initialVelocity: Velocity,
-                             private var position: GPoint) extends Entity {
+                             private var _position: GPoint) extends Entity {
   def visible: Boolean = {
-    position.x >= 0 && position.y >= 0 && position.x <= gp.getWidth && position.y <= gp.getHeight
+    _position.x >= 0 && _position.y >= 0 && _position.x <= gp.getWidth && _position.y <= gp.getHeight
   }
 
   def render(g: Graphics2D): Unit
