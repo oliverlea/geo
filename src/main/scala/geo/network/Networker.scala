@@ -15,7 +15,7 @@ abstract class Networker {
         println(s"Successful reading $data")
         Successful(data)
       case _ =>
-        println("Failed reading")
+        println("Empty packet")
         Empty()
     }
   } catch {
@@ -30,26 +30,7 @@ abstract class Networker {
   }
 
   def receive(in: ObjectInputStream): Option[Packet] = {
-    val resp = read(in)
-
-    println(s"Receiving: $resp")
-
-    //    val response = resp match {
-    //      case Successful(data) if data.sender != Multiplayer.Identifier =>
-    //        println(s"Received packet: $data")
-    //        Option(data.position)
-    //      case Successful(data) =>
-    //        println(s"Received from self: $data")
-    //        None
-    //      case Failed(e) =>
-    //        println(s"Error in packet: ${e.getMessage}")
-    //        None
-    //      case Empty() =>
-    //        println("Empty packet")
-    //        None
-    //    }
-
-    resp match {
+    read(in) match {
       case Successful(data) => Option(data)
       case Failed(e) => throw e
       case Empty() => None

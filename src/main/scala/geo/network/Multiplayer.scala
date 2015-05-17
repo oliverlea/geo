@@ -13,8 +13,7 @@ import scala.concurrent.Future
  *
  * @author Paulius Imbrasas
  */
-class Multiplayer(val player: Player,
-                  val nplayer: NPlayer) {
+class Multiplayer(val player: Player, val nplayer: NPlayer) {
 
   // Members
 
@@ -25,9 +24,7 @@ class Multiplayer(val player: Player,
   val server = new Server(in)
   lazy val client = new Client(out)
 
-  val serverThread = new Thread(server)
-
-  serverThread.start()
+  val serverThread = new Thread(server).start()
 
   // Methods
 
