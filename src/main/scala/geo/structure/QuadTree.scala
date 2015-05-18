@@ -72,5 +72,5 @@ class QuadTree[T <: VisibleEntity](minX: Double, minY: Double, maxX: Double, max
 }
 
 object QuadTree {
-  val ELEMENTS_PER_LEAF = 1
+  val ELEMENTS_PER_LEAF = 10
 }
