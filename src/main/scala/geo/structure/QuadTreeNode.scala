@@ -29,18 +29,19 @@ protected class QuadTreeNode[T <: VisibleEntity](var x: Double,
   }
 
   def nodeType: QuadTreeNodeType.Value = {
-    if (nw.isDefined || sw.isDefined || ne.isDefined || se.isDefined) QuadTreeNodeType.REFERENCE
+    if (presentChildNodes.nonEmpty) QuadTreeNodeType.REFERENCE
     else if (elements.isEmpty) QuadTreeNodeType.EMPTY
     else QuadTreeNodeType.LEAF
   }
 
   def split(): Unit = {
-    val halfWidth: Double = (x + width) / 2
-    val halfHeight: Double = (y + height) / 2
-    nw = Some(new QuadTreeNode[T](0, y + halfHeight, halfWidth, halfHeight, this))
-    sw = Some(new QuadTreeNode[T](0, 0, halfWidth, halfHeight, this))
-    ne = Some(new QuadTreeNode[T](x + halfWidth, halfHeight, halfWidth, halfHeight, this))
-    se = Some(new QuadTreeNode[T](x + halfWidth, 0, halfWidth, halfHeight, this))
+    val halfWidth: Double = width / 2
+    val halfHeight: Double = height / 2
+    nw = Some(new QuadTreeNode[T](x, y, halfWidth, halfHeight, this))
+    sw = Some(new QuadTreeNode[T](x, y + halfHeight, halfWidth, halfHeight, this))
+    ne = Some(new QuadTreeNode[T](x + halfWidth, y, halfWidth, halfHeight, this))
+    se = Some(new QuadTreeNode[T](x + halfWidth, y + halfHeight, halfWidth, halfHeight, this))
+
     for (e <- elements) {
       val p: GPoint = e._1
       if (nw.get.withinBounds(p)) nw.get.elements = e :: nw.get.elements

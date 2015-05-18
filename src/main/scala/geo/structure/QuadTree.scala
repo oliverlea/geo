@@ -28,7 +28,7 @@ class QuadTree[T <: VisibleEntity](minX: Double, minY: Double, maxX: Double, max
         case QuadTreeNodeType.EMPTY => l
         case QuadTreeNodeType.LEAF => node :: l
         case _ =>
-          var newL = List[QuadTreeNode[T]]()
+          var newL = l
           for (n <- node.presentChildNodes) {
             newL = getLeavesR(newL, n)
           }
@@ -55,14 +55,15 @@ class QuadTree[T <: VisibleEntity](minX: Double, minY: Double, maxX: Double, max
       if (quadrantNode.isDefined)
         insertR(quadrantNode.get, p, t, newSplit)
       else
-        false
+        newSplit
     }
     insertR(node, p, t, split = false)
   }
 
   private def determineQuadrant(parentNode: QuadTreeNode[T], p: GPoint): Option[QuadTreeNode[T]] = {
     for (n <- parentNode.presentChildNodes) {
-      if (n.withinBounds(p)) Some(n)
+      if (n.withinBounds(p))
+        return Some(n)
     }
     None
   }
@@ -71,5 +72,5 @@ class QuadTree[T <: VisibleEntity](minX: Double, minY: Double, maxX: Double, max
 }
 
 object QuadTree {
-  val ELEMENTS_PER_LEAF = 10
+  val ELEMENTS_PER_LEAF = 1
 }
