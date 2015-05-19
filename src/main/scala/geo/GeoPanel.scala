@@ -118,8 +118,12 @@ class GeoPanel extends JPanel {
     super.paintComponent(g)
     val g2d = g.asInstanceOf[Graphics2D]
     visibleEntities.foreach(_.render(g2d))
+    drawQuadTree(g, visibleEntities)
+  }
+
+  private def drawQuadTree(g: Graphics, ves: Seq[VisibleEntity]): Unit = {
     val qt = new QuadTree[VisibleEntity](0, 0, getWidth, getHeight)
-    for (ve <- visibleEntities) {
+    for (ve <- ves) {
       qt.set(ve.position, ve)
     }
     for (leaf <- qt.getLeaves) {
