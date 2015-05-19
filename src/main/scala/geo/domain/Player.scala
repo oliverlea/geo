@@ -1,7 +1,7 @@
 package geo.domain
 
-import java.awt.{Rectangle, Graphics2D}
 import java.awt.event.{ActionEvent, KeyEvent}
+import java.awt.{Graphics2D, Rectangle}
 import javax.swing.{AbstractAction, Action, KeyStroke}
 
 import geo.GeoPanel
@@ -58,6 +58,7 @@ class Player(private val gp: GeoPanel,
       _velocity = _velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
       _velocity = limitToMaxSpeed(_velocity, MAX_SPEED)
     })
+
     if (!_velocity.stationary) {
       keysHeld.foreach(hk => {
         val kh: KeyInfo = hk._2
@@ -99,7 +100,6 @@ class Player(private val gp: GeoPanel,
     else
       new GPoint(wrap(maybeNextP.x, windowWidth), wrap(maybeNextP.y, windowHeight))
   }
-
 
   def limitToMaxSpeed(vel: Velocity, maxSpeed: Double): Velocity = {
     var newVel: Velocity = vel

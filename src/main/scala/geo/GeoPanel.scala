@@ -5,7 +5,7 @@ import java.awt.{Graphics, Graphics2D}
 import javax.swing.{AbstractAction, JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
-import geo.domain.spawner.VisibleEntitySpawner
+import geo.domain.spawner.{EnemySpawner, VisibleEntitySpawner}
 import geo.network._
 import geo.structure.QuadTree
 
@@ -38,7 +38,6 @@ class GeoPanel extends JPanel {
   val am = getActionMap
 
   type MouseHandler = (GPoint, Boolean) => Unit
-
 
   addMouseMotionListener(new MouseMotionAdapter {
     override def mouseDragged(e: MouseEvent): Unit = {
@@ -81,13 +80,13 @@ class GeoPanel extends JPanel {
     player, nplayer
   )
   private val visibleEntitySpawners: List[VisibleEntitySpawner[_ <: VisibleEntity]] = List(
-    //    new EnemySpawner(this)
+    new EnemySpawner(this)
   )
 
   def tick(delta: Double) = {
     visibleEntities.foreach(_.tick(delta))
     visibleEntities = visibleEntities.filter(_.shouldLive)
-    visibleEntities = generateVisibleEntities(visibleEntitySpawners, delta) ::: visibleEntities
+    visibleEntities = visibleEntities ::: generateVisibleEntities(visibleEntitySpawners, delta)
     network.tick(delta)
     detectCollisions(visibleEntities)
   }
@@ -97,12 +96,12 @@ class GeoPanel extends JPanel {
     for (ve <- ves) {
       qt.set(ve.position, ve)
     }
+
     for (nearElements <- qt.getElements) {
       for (e <- nearElements) {
         for (e2 <- nearElements) {
           if (e != e2 && e.bounds.intersects(e2.bounds)) {
             e.collidedWith(e2)
-            e2.collidedWith(e)
           }
         }
       }
@@ -112,11 +111,7 @@ class GeoPanel extends JPanel {
   def generateVisibleEntities(ves: Seq[VisibleEntitySpawner[_ <: VisibleEntity]],
                               delta: Double): List[VisibleEntity] = {
     val r = new Random(Platform.currentTime)
-    var newEntities = List[VisibleEntity]()
-    for (s <- ves) {
-      newEntities = s.spawnVisibleEntities(delta, r) ::: newEntities
-    }
-    newEntities
+    ves.map(_.spawnVisibleEntities(delta, r)).flatten.toList
   }
 
   def addEntity(entity: VisibleEntity): Unit = {
