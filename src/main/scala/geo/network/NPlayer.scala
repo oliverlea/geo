@@ -35,5 +35,5 @@ class NPlayer(private val gp: GeoPanel,
 }
 
 object NPlayer {
-  val SIZE = 25
+  val SIZE = 20
 }

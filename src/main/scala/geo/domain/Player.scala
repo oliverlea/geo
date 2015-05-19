@@ -133,5 +133,4 @@ object Player {
   val DECELERATION_FACTOR_PER_TICK = 0.98 // Non-linear
   val TICKS_TILL_SLOW_DOWN = 10
   val FIRE_DELAY = 5 // ticks
-  val NETWORK_DELAY = 20
 }
