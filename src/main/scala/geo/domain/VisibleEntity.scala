@@ -17,4 +17,5 @@ abstract class VisibleEntity(private val gp: GeoPanel,
 
   def render(g: Graphics2D): Unit
   def bounds: Rectangle
+  def collidedWith(ve: VisibleEntity): Unit
 }

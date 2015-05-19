@@ -5,7 +5,7 @@ import geo.domain.{VisibleEntity, GPoint}
 /**
  * @author Oliver Lea
  */
-class QuadTree[T <: VisibleEntity](minX: Double, minY: Double, maxX: Double, maxY: Double) {
+class QuadTree[T](minX: Double, minY: Double, maxX: Double, maxY: Double) {
 
   private val root = new QuadTreeNode[T](minX, minY, maxX, maxY, null)
   private var count = 1

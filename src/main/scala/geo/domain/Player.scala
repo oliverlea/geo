@@ -119,6 +119,10 @@ class Player(private val gp: GeoPanel,
 
   override def bounds = new Rectangle(math.round(position.x - 10).toInt, math.round(position.y - 10).toInt, 20, 20)
 
+  override def collidedWith(ve: VisibleEntity): Unit = {
+
+  }
+
   def pressedDirection(direction: Direction.Value): Unit = {
     keysHeld += (direction -> new KeyInfo(true, 0))
   }

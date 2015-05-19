@@ -5,11 +5,12 @@ import geo.domain.{VisibleEntity, GPoint}
 /**
  * @author Oliver Lea
  */
-protected class QuadTreeNode[T <: VisibleEntity](var x: Double,
-                                                 var y: Double,
-                                                 var width: Double,
-                                                 var height: Double,
-                                                 var parent: QuadTreeNode[T]) {
+protected class QuadTreeNode[T](var x: Double,
+                                var y: Double,
+                                var width: Double,
+                                var height: Double,
+                                var parent: QuadTreeNode[T]) {
+
   var nw: Option[QuadTreeNode[T]] = None
   var sw: Option[QuadTreeNode[T]] = None
   var ne: Option[QuadTreeNode[T]] = None

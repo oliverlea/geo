@@ -39,6 +39,8 @@ class Bullet(private val gp: GeoPanel,
     SIZE,
     SIZE
   )
+
+  override def collidedWith(ve: VisibleEntity): Unit = ()
 }
 
 object Bullet {

@@ -12,6 +12,8 @@ class Enemy(private val gp: GeoPanel,
             private var velocity: Velocity,
             var position: GPoint) extends VisibleEntity(gp, velocity) {
 
+  private var alive = true
+
   override def render(g: Graphics2D): Unit = {
     val b = bounds
     g.drawOval(
@@ -28,7 +30,7 @@ class Enemy(private val gp: GeoPanel,
 
   private def nextPosition(p: GPoint, v: Velocity): GPoint = p + v
 
-  override def shouldLive: Boolean = visible
+  override def shouldLive: Boolean = alive && visible
 
   override def bounds = new Rectangle(
     position.roundX - SIZE / 2,
@@ -36,6 +38,13 @@ class Enemy(private val gp: GeoPanel,
     SIZE,
     SIZE
   )
+
+  override def collidedWith(ve: VisibleEntity): Unit = {
+    ve match {
+      case ve: Bullet => alive = false
+      case _ =>
+    }
+  }
 }
 
 object Enemy {
