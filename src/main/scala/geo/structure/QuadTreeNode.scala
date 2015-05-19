@@ -1,6 +1,6 @@
 package geo.structure
 
-import geo.domain.{VisibleEntity, GPoint}
+import geo.domain.GPoint
 
 /**
  * @author Oliver Lea
