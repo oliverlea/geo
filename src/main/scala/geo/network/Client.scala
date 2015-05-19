@@ -1,28 +1,41 @@
 package geo.network
 
-import java.io.{ObjectInputStream, ObjectOutputStream}
+import java.io.ObjectOutputStream
 import java.net.Socket
 
-import geo.domain.GPoint
+import geo.network.Networking.PacketOut
 
 /**
  * @author Paulius Imbrasas
  */
-object Client {
+protected class Client(val out: PacketOut) extends Networker {
 
-  def ping = {
-    val socket = new Socket("localhost", 1201)
-    val out = new ObjectOutputStream(socket.getOutputStream)
-    val in = new ObjectInputStream(socket.getInputStream)
+  var socket: Option[Socket] = None
+  var ostream: ObjectOutputStream = _
+  var connected = false
 
-    out.writeObject(new GPoint(0, 1))
+  def isConnected = connected
 
-    out.close()
-    in.close()
-    socket.close()
+  def send(): Unit = socket match {
+    case Some(s) => send(ostream, out())
+    case None => println("Socket closed")
   }
 
-  def main(args: Array[String]) {
-    ping
+  def connect(): Unit = try {
+    val s = new Socket("localhost", 1201)
+    ostream = new ObjectOutputStream(s.getOutputStream)
+    socket = Option(s)
+    connected = true
+  } catch {
+    case e: Exception => println(e.getMessage)
   }
+
+  def disconnect(): Unit = socket match {
+    case Some(s) =>
+      ostream.close()
+      s.close()
+      connected = false
+    case None => println("Socket closed already")
+  }
+
 }

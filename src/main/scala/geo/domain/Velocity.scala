@@ -3,7 +3,7 @@ package geo.domain
 /**
  * @author Oliver Lea
  */
-class Velocity(val dx: Double, val dy: Double) {
+class Velocity(val dx: Double, val dy: Double) extends Serializable {
   def stationary = (dx < 1E-5 && dx > -1E-5) && (dy < 1E-5 && dy > -1E-5)
   def stationaryInDirection(dir: Direction.Value) = dir match {
     case Direction.UP => dy > -1E-5

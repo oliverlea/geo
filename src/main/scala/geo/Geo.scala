@@ -23,7 +23,7 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
       var fps = lastFps + 1
 
       if (fpsTime > 1000) {
-        println(s"FPS: $fps")
+        setTitle(s"Geo $fps fps")
         fpsTime = 0
         fps = 0
       }
@@ -60,7 +60,6 @@ object Geo {
       override def run(): Unit = {
         val geoPanel = new GeoPanel
         val geo = new Geo(geoPanel)
-        geo.setTitle("Geo")
         geo.setMinimumSize(new Dimension(800, 600))
         geo.add(geoPanel)
         geo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)

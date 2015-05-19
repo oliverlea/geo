@@ -17,11 +17,12 @@ class Player(private val gp: GeoPanel,
 
   // Constructor
 
-  private var velocity = initialVelocity
+  private var _velocity = initialVelocity
 
   private var fire = false
   private var firingTarget = new GPoint(0, 0)
   private var fireCountdown: Double = 0
+  private var networkCountdown: Double = 0
 
   private var keysHeld = Map(
     Direction.UP -> new KeyInfo(false, 0),
@@ -50,18 +51,20 @@ class Player(private val gp: GeoPanel,
     }
   }
 
+  def velocity = _velocity
+
   override def tick(delta: Double): Unit = {
     keysHeld.filter(_._2.held).foreach(kh => {
-      velocity = velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
-      velocity = limitToMaxSpeed(velocity, MAX_SPEED)
+      _velocity = _velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
+      _velocity = limitToMaxSpeed(_velocity, MAX_SPEED)
     })
-    if (!velocity.stationary) {
+    if (!_velocity.stationary) {
       keysHeld.foreach(hk => {
         val kh: KeyInfo = hk._2
         if (!kh.held && kh.ticksHeld >= Player.TICKS_TILL_SLOW_DOWN) {
-          velocity = velocity.scaleAccelerate(hk._1, 1 - (delta * (1 - DECELERATION_FACTOR_PER_TICK)))
+          _velocity = _velocity.scaleAccelerate(hk._1, 1 - (delta * (1 - DECELERATION_FACTOR_PER_TICK)))
         }
-        if (velocity.stationaryInDirection(hk._1))
+        if (_velocity.stationaryInDirection(hk._1))
           keysHeld += hk._1 -> new KeyInfo(kh.held, 0)
         else
           keysHeld += hk._1 -> new KeyInfo(kh.held, kh.ticksHeld + 1)
@@ -102,8 +105,8 @@ class Player(private val gp: GeoPanel,
     var newVel: Velocity = vel
     if (math.abs(newVel.dx) > maxSpeed)
       newVel = new Velocity(if (newVel.dx > 0) maxSpeed else -maxSpeed, newVel.dy)
-    if (math.abs(velocity.dy) > maxSpeed)
-      newVel = new Velocity(velocity.dx, if (velocity.dy > 0) maxSpeed else -maxSpeed)
+    if (math.abs(_velocity.dy) > maxSpeed)
+      newVel = new Velocity(_velocity.dx, if (_velocity.dy > 0) maxSpeed else -maxSpeed)
     if ((newVel.dy * newVel.dy + newVel.dx + newVel.dx) > maxSpeed * maxSpeed) {
       newVel = newVel.normalize * maxSpeed
     }
@@ -120,7 +123,6 @@ class Player(private val gp: GeoPanel,
   override def bounds = new Rectangle(math.round(position.x - 10).toInt, math.round(position.y - 10).toInt, 20, 20)
 
   override def collidedWith(ve: VisibleEntity): Unit = {
-
   }
 
   def pressedDirection(direction: Direction.Value): Unit = {
@@ -133,9 +135,11 @@ class Player(private val gp: GeoPanel,
 }
 
 object Player {
+  val SIZE = 20
   val MAX_SPEED = 5
   val ACCELERATION_PER_TICK = 0.12 // Linear
   val DECELERATION_FACTOR_PER_TICK = 0.98 // Non-linear
   val TICKS_TILL_SLOW_DOWN = 10
   val FIRE_DELAY = 5 // ticks
+  val NETWORK_DELAY = 20
 }
