@@ -8,5 +8,10 @@ import geo.domain.{GPoint, Velocity}
 class Packet(val position: GPoint,
              val velocity: Velocity,
              val sender: String) extends Serializable {
+
+  def this() = {
+    this(null, null, null)
+  }
+
   override def toString: String = s"Position: $position; Velocity: $velocity; Sender: $sender"
 }
