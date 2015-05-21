@@ -18,11 +18,29 @@ class NPlayer(private val gp: GeoPanel,
               private val initialVelocity: Velocity,
               var position: GPoint) extends VisibleEntity(gp, initialVelocity) with Serializable {
 
+  var _velocity = new Velocity(initialVelocity)
+
   override def render(g: Graphics2D): Unit = {
     g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height)
   }
 
   override def tick(delta: Double): Unit = {
+    position = nextPosition(position, _velocity)
+  }
+
+  private def nextPosition(p: GPoint, v: Velocity): GPoint = {
+    def wrap(x: Double, bound: Double): Double = x match {
+      case y if x < 0 => bound - y
+      case y if x > bound => y - bound
+      case y => y
+    }
+    val maybeNextP = p + v
+    val windowWidth = gp.getWidth.toDouble
+    val windowHeight = gp.getHeight.toDouble
+    if (maybeNextP.x >= 0 && maybeNextP.y >= 0 && maybeNextP.x <= windowWidth && maybeNextP.y <= windowHeight)
+      maybeNextP
+    else
+      new GPoint(wrap(maybeNextP.x, windowWidth), wrap(maybeNextP.y, windowHeight))
   }
 
   override def shouldLive: Boolean = true

@@ -24,7 +24,7 @@ protected class Client(val out: PacketOut) extends Networker {
   def connect(): Unit = {
     if (!connected) {
       try {
-        val s = new Socket("192.168.0.5", 1201)
+        val s = new Socket("192.168.0.16", 1201)
         ostream = new ObjectOutputStream(s.getOutputStream)
         socket = Option(s)
         connected = true

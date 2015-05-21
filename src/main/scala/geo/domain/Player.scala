@@ -17,7 +17,7 @@ class Player(private val gp: GeoPanel,
 
   // Constructor
 
-  private var _velocity = initialVelocity
+  var _velocity = initialVelocity
 
   private var fire = false
   private var firingTarget = new GPoint(0, 0)
@@ -51,8 +51,6 @@ class Player(private val gp: GeoPanel,
     }
   }
 
-  def velocity = _velocity
-
   override def tick(delta: Double): Unit = {
     keysHeld.filter(_._2.held).foreach(kh => {
       _velocity = _velocity.linearAccelerate(kh._1, delta * ACCELERATION_PER_TICK)
@@ -74,7 +72,7 @@ class Player(private val gp: GeoPanel,
 
     updateFire(delta)
 
-    position = nextPosition(position, velocity)
+    position = nextPosition(position, _velocity)
   }
 
   private def updateFire(delta: Double): Unit = {

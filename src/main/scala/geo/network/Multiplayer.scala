@@ -34,9 +34,7 @@ class Multiplayer(val player: Player, val nplayer: NPlayer) {
     if (client.isConnected) {
       networkCountdown -= delta
       if (networkCountdown <= 0) {
-        Future {
-          client.send()
-        }
+        client.send()
         networkCountdown = Multiplayer.NetworkDelay
       }
     }
@@ -48,20 +46,23 @@ class Multiplayer(val player: Player, val nplayer: NPlayer) {
    * @param o maybe a packet, if reading was successful
    */
   def in(o: Option[Packet]): Unit = {
-    nplayer.position = o match {
-      case Some(packet) => packet.position
-      case None => nplayer.position
+    o match {
+      case Some(packet) => {
+        nplayer.position = packet.position
+        nplayer._velocity = packet.velocity
+      }
+      case _ =>
     }
   }
 
   /**
    * Handles sending out a packet to the other player
    */
-  def out(): Packet = new Packet(player.position, player.velocity, Multiplayer.Identifier)
+  def out(): Packet = new Packet(player.position, player._velocity, Multiplayer.Identifier)
 }
 
 object Multiplayer {
   val random = new SecureRandom
   val Identifier = new BigInteger(130, random).toString(32)
-  val NetworkDelay = 5
+  val NetworkDelay = 0
 }
