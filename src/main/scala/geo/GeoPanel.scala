@@ -5,7 +5,7 @@ import java.awt.{Graphics, Graphics2D}
 import javax.swing.{AbstractAction, JPanel, KeyStroke, SwingUtilities}
 
 import geo.domain._
-import geo.domain.spawner.{EnemySpawner, VisibleEntitySpawner}
+import geo.domain.spawner.VisibleEntitySpawner
 import geo.network._
 import geo.structure.QuadTree
 
@@ -80,7 +80,7 @@ class GeoPanel extends JPanel {
     player, nplayer
   )
   private val visibleEntitySpawners: List[VisibleEntitySpawner[_ <: VisibleEntity]] = List(
-    new EnemySpawner(this)
+//    new EnemySpawner(this)
   )
 
   def tick(delta: Double) = {
@@ -111,7 +111,7 @@ class GeoPanel extends JPanel {
   def generateVisibleEntities(ves: Seq[VisibleEntitySpawner[_ <: VisibleEntity]],
                               delta: Double): List[VisibleEntity] = {
     val r = new Random(Platform.currentTime)
-    ves.map(_.spawnVisibleEntities(delta, r)).flatten.toList
+    ves.flatMap(_.spawnVisibleEntities(delta, r)).toList
   }
 
   def addEntity(entity: VisibleEntity): Unit = {

@@ -20,7 +20,7 @@ abstract class Networker {
     }
   } catch {
     case e: IOException =>
-      println(s"Failed reading: ${e.getMessage}")
+      e.printStackTrace()
       Failed(e)
   }
 
@@ -30,9 +30,16 @@ abstract class Networker {
   }
 
   def receive(in: ObjectInputStream): Option[Packet] = read(in) match {
-    case Successful(data) => Option(data)
-    case Failed(e) => throw e
-    case Empty() => None
+    case Successful(data) =>
+      println(s"Received: $data")
+      Option(data)
+    case Failed(e) =>
+      println(s"Failed: $e")
+      e.printStackTrace()
+      throw e
+    case Empty() =>
+      println(s"Empty")
+      None
   }
 }
 
