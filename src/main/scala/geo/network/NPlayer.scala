@@ -18,7 +18,10 @@ class NPlayer(private val gp: GeoPanel,
               private val initialVelocity: Velocity,
               var position: GPoint) extends VisibleEntity(gp, initialVelocity) with Serializable {
 
-  var _velocity = new Velocity(initialVelocity)
+  private var _velocity = new Velocity(initialVelocity)
+
+  def velocity = _velocity
+  def velocity_=(v: Velocity) = _velocity = v
 
   override def render(g: Graphics2D): Unit = {
     g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height)

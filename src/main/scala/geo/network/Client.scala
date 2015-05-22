@@ -1,45 +1,42 @@
 package geo.network
 
-import java.io.ObjectOutputStream
+import java.io.{IOException, ObjectOutputStream}
 import java.net.Socket
-
-import geo.network.Networking.PacketOut
 
 /**
  * @author Paulius Imbrasas
  */
-protected class Client(val out: PacketOut) extends Networker {
+protected class Client(private val createPacket: () => Packet) extends Networker {
 
-  var socket: Option[Socket] = None
-  var ostream: ObjectOutputStream = _
-  var connected = false
+  private var socket: Socket = _
+  private var ostream: ObjectOutputStream = _
+  private var connected = false
 
   def isConnected = connected
 
-  def send(): Unit = socket match {
-    case Some(s) => send(ostream, out())
-    case None => println("Socket closed")
+  def send(): Unit = try {
+    send(ostream, createPacket())
+  } catch {
+    case e: IOException =>
+      connected = false
+      ostream.close()
   }
 
-  def connect(): Unit = {
+  def connect(ip: String): Unit = {
     if (!connected) {
       try {
-        val s = new Socket("192.168.0.16", 1201)
-        ostream = new ObjectOutputStream(s.getOutputStream)
-        socket = Option(s)
+        socket = new Socket(ip, 1399)
+        ostream = new ObjectOutputStream(socket.getOutputStream)
         connected = true
       } catch {
-        case e: Exception => println(e.getMessage)
+        case e: Exception => e.printStackTrace()
       }
     }
   }
 
-  def disconnect(): Unit = socket match {
-    case Some(s) =>
-      ostream.close()
-      s.close()
-      connected = false
-    case None => println("Socket closed already")
+  def disconnect(): Unit = {
+    ostream.close()
+    connected = false
   }
 
 }

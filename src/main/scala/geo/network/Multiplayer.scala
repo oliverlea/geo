@@ -5,9 +5,6 @@ import java.security.SecureRandom
 
 import geo.domain.Player
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
 /**
  * An abstraction to handle hide whether this is the server or the client
  *
@@ -18,17 +15,20 @@ class Multiplayer(val player: Player, val nplayer: NPlayer) {
   // Members
 
   private var networkCountdown: Double = 0
+  private var remoteIP: String = _
 
   // Constructor
 
-  val server = new Server(in)
-  lazy val client = new Client(out)
+  val server = new Server(receivePacket, remoteIP = _)
+  lazy val client = new Client(sendPacket)
 
   val serverThread = new Thread(server).start()
 
   // Methods
 
-  def connect() = client.connect()
+  def connect() = client.connect(remoteIP)
+
+  def connect(ip: String) = client.connect(ip)
 
   def tick(delta: Double): Unit = {
     if (client.isConnected) {
@@ -45,20 +45,20 @@ class Multiplayer(val player: Player, val nplayer: NPlayer) {
    *
    * @param o maybe a packet, if reading was successful
    */
-  def in(o: Option[Packet]): Unit = {
+  def receivePacket(o: Option[Packet]): Unit = {
     o match {
       case Some(packet) => {
         nplayer.position = packet.position
-        nplayer._velocity = packet.velocity
+        nplayer.velocity = packet.velocity
       }
-      case _ =>
+      case None =>
     }
   }
 
   /**
    * Handles sending out a packet to the other player
    */
-  def out(): Packet = new Packet(player.position, player._velocity, Multiplayer.Identifier)
+  def sendPacket(): Packet = new Packet(player.position, player._velocity, Multiplayer.Identifier)
 }
 
 object Multiplayer {
