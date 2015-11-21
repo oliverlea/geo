@@ -1,21 +1,21 @@
-package geo
+package geo.screens
 
 import java.awt.event._
 import java.awt.{Graphics, Graphics2D}
-import javax.swing.{AbstractAction, JPanel, KeyStroke, SwingUtilities}
+import javax.swing.{KeyStroke, SwingUtilities}
 
+import geo.Geo
 import geo.domain._
 import geo.domain.spawner.{EnemySpawner, VisibleEntitySpawner}
-import geo.network._
 import geo.structure.QuadTree
 
 import scala.compat.Platform
 import scala.util.Random
 
 /**
- * @author Oliver Lea
- */
-class GeoPanel extends JPanel {
+  * @author Oliver Lea
+  */
+class GeoPanel(_engine: Geo) extends Screen {
 
   // constructor
 
@@ -34,6 +34,7 @@ class GeoPanel extends JPanel {
   im.put(D_RELEASED, D_RELEASED)
 
   im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, 0), KeyEvent.VK_C)
+  im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), KeyEvent.VK_ESCAPE)
 
   val am = getActionMap
 
@@ -43,24 +44,23 @@ class GeoPanel extends JPanel {
     override def mouseDragged(e: MouseEvent): Unit = {
       if (SwingUtilities.isLeftMouseButton(e)) {
         val mousePosition = new GPoint(e.getX, e.getY)
-        mouseHandlers.foreach(_(mousePosition, true))
+        mouseHandlers.foreach(_ (mousePosition, true))
       }
     }
   })
 
   addMouseListener(new MouseAdapter {
-
     override def mousePressed(e: MouseEvent): Unit = {
       if (SwingUtilities.isLeftMouseButton(e)) {
         val mousePosition = new GPoint(e.getX, e.getY)
-        mouseHandlers.foreach(_(mousePosition, true))
+        mouseHandlers.foreach(_ (mousePosition, true))
       }
     }
 
     override def mouseReleased(e: MouseEvent): Unit = {
       if (SwingUtilities.isLeftMouseButton(e)) {
         val mousePosition = new GPoint(e.getX, e.getY)
-        mouseHandlers.foreach(_(mousePosition, false))
+        mouseHandlers.foreach(_ (mousePosition, false))
       }
     }
   })
@@ -71,15 +71,13 @@ class GeoPanel extends JPanel {
   private var mouseHandlers: List[MouseHandler] = List()
 
   private val player = new Player(this, new Velocity(0, 0), new GPoint(20, 20))
-  private val nplayer = new NPlayer(this, new Velocity(0, 0), new GPoint(0, 0))
+//  private val nplayer = new NPlayer(this, new Velocity(0, 0), new GPoint(0, 0))
 
-  private val network = new Multiplayer(player, nplayer)
-  am.put(KeyEvent.VK_C, new AbstractAction() {
-    override def actionPerformed(e: ActionEvent): Unit = network.connect()
-  })
+//  private val network = new Multiplayer(player, nplayer)
+//  am.put(KeyEvent.VK_C, () => network.connect())
 
   private var visibleEntities: List[VisibleEntity] = List(
-    player, nplayer
+    player
   )
   private val visibleEntitySpawners: List[VisibleEntitySpawner[_ <: VisibleEntity]] = List(
     new EnemySpawner(this)
@@ -89,7 +87,7 @@ class GeoPanel extends JPanel {
     visibleEntities.foreach(_.tick(delta))
     visibleEntities = visibleEntities.filter(_.shouldLive)
     visibleEntities = visibleEntities ::: generateVisibleEntities(visibleEntitySpawners, delta)
-    network.tick(delta)
+//    network.tick(delta)
     detectCollisions(visibleEntities)
   }
 
@@ -126,21 +124,14 @@ class GeoPanel extends JPanel {
 
   override def paintComponent(g: Graphics): Unit = {
     super.paintComponent(g)
+
     val g2d = g.asInstanceOf[Graphics2D]
     visibleEntities.foreach(_.render(g2d))
-    drawQuadTree(g, visibleEntities)
+
+    if (Geo.DEBUG) {
+      QuadTree.drawQuadTree(g, getHeight, getWidth, visibleEntities)
+    }
   }
 
-  private def drawQuadTree(g: Graphics, ves: Seq[VisibleEntity]): Unit = {
-    val qt = new QuadTree[VisibleEntity](0, 0, getWidth, getHeight)
-    for (ve <- ves) {
-      qt.set(ve.position, ve)
-    }
-    for (leaf <- qt.getLeaves) {
-      g.drawLine(leaf.x.toInt, leaf.y.toInt, (leaf.x + leaf.width).toInt, leaf.y.toInt)
-      g.drawLine(leaf.x.toInt, leaf.y.toInt, leaf.x.toInt, (leaf.y + leaf.height).toInt)
-      g.drawLine(leaf.x.toInt, (leaf.y + leaf.height).toInt, (leaf.x + leaf.width).toInt, (leaf.y + leaf.height).toInt)
-      g.drawLine((leaf.x + leaf.width).toInt, (leaf.y + leaf.height).toInt, (leaf.x + leaf.width).toInt, leaf.y.toInt)
-    }
-  }
+  override var engine: Geo = _engine
 }

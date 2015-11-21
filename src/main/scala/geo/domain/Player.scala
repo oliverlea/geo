@@ -1,11 +1,12 @@
 package geo.domain
 
-import java.awt.event.{ActionEvent, KeyEvent}
+import java.awt.event.KeyEvent
 import java.awt.{Graphics2D, Rectangle}
-import javax.swing.{AbstractAction, Action, KeyStroke}
+import javax.swing.KeyStroke
 
-import geo.GeoPanel
+import geo.Implicits.convertLambdaToAction
 import geo.domain.Player._
+import geo.screens.GeoPanel
 
 /**
  * @author Paulius Imbrasas
@@ -44,12 +45,6 @@ class Player(private val gp: GeoPanel,
     if (held)
       firingTarget = new GPoint(coordinates.x, coordinates.y)
   })
-
-  private implicit def convertLambdaToAction(f: () => Unit): Action = new AbstractAction() {
-    override def actionPerformed(e: ActionEvent): Unit = {
-      f()
-    }
-  }
 
   override def tick(delta: Double): Unit = {
     keysHeld.filter(_._2.held).foreach(kh => {
@@ -135,9 +130,12 @@ class Player(private val gp: GeoPanel,
 object Player {
   val SIZE = 20
   val MAX_SPEED = 5
-  val ACCELERATION_PER_TICK = 0.12 // Linear
-  val DECELERATION_FACTOR_PER_TICK = 0.98 // Non-linear
+  val ACCELERATION_PER_TICK = 0.12
+  // Linear
+  val DECELERATION_FACTOR_PER_TICK = 0.98
+  // Non-linear
   val TICKS_TILL_SLOW_DOWN = 10
-  val FIRE_DELAY = 5 // ticks
+  val FIRE_DELAY = 5
+  // ticks
   val NETWORK_DELAY = 20
 }

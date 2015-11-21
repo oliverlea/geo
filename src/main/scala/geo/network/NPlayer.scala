@@ -2,9 +2,9 @@ package geo.network
 
 import java.awt.{Graphics2D, Rectangle}
 
-import geo.GeoPanel
 import geo.domain.{GPoint, Velocity, VisibleEntity}
 import geo.network.NPlayer.SIZE
+import geo.screens.GeoPanel
 
 /**
  * Network Player – represents a player from over the network

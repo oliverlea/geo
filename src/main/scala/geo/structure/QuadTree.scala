@@ -1,6 +1,8 @@
 package geo.structure
 
-import geo.domain.GPoint
+import java.awt.Graphics
+
+import geo.domain.{GPoint, VisibleEntity}
 
 /**
  * @author Oliver Lea
@@ -73,4 +75,17 @@ class QuadTree[T](minX: Double, minY: Double, maxX: Double, maxY: Double) {
 
 object QuadTree {
   val ELEMENTS_PER_LEAF = 10
+
+  def drawQuadTree(g: Graphics, height: Double, width: Double, ves: Seq[VisibleEntity]): Unit = {
+    val qt = new QuadTree[VisibleEntity](0, 0, height, width)
+    for (ve <- ves) {
+      qt.set(ve.position, ve)
+    }
+    for (leaf <- qt.getLeaves) {
+      g.drawLine(leaf.x.toInt, leaf.y.toInt, (leaf.x + leaf.width).toInt, leaf.y.toInt)
+      g.drawLine(leaf.x.toInt, leaf.y.toInt, leaf.x.toInt, (leaf.y + leaf.height).toInt)
+      g.drawLine(leaf.x.toInt, (leaf.y + leaf.height).toInt, (leaf.x + leaf.width).toInt, (leaf.y + leaf.height).toInt)
+      g.drawLine((leaf.x + leaf.width).toInt, (leaf.y + leaf.height).toInt, (leaf.x + leaf.width).toInt, leaf.y.toInt)
+    }
+  }
 }

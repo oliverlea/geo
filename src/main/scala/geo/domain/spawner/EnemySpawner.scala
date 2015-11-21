@@ -1,8 +1,8 @@
 package geo.domain.spawner
 
-import geo.GeoPanel
 import geo.domain.spawner.EnemySpawner.TICKS_PER_GENERATE
-import geo.domain.{Velocity, GPoint, Enemy}
+import geo.domain.{Enemy, GPoint, Velocity}
+import geo.screens.GeoPanel
 
 import scala.util.Random
 

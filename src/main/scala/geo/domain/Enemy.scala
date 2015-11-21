@@ -1,9 +1,9 @@
 package geo.domain
 
-import java.awt.{Rectangle, Graphics2D}
+import java.awt.{Graphics2D, Rectangle}
 
-import geo.GeoPanel
 import geo.domain.Enemy.SIZE
+import geo.screens.GeoPanel
 
 /**
  * @author Oliver Lea

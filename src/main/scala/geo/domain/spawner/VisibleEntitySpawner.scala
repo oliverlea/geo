@@ -1,7 +1,7 @@
 package geo.domain.spawner
 
-import geo.GeoPanel
 import geo.domain.VisibleEntity
+import geo.screens.GeoPanel
 
 import scala.util.Random
 

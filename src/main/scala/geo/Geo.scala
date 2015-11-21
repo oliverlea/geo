@@ -1,17 +1,46 @@
 package geo
 
 import java.awt.Dimension
+import java.awt.event.KeyEvent
 import javax.swing.{JFrame, SwingUtilities}
+
+import geo.screens.{MainMenu, Screen}
 
 import scala.compat.Platform
 
 /**
- * @author Oliver Lea
- */
-class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
+  * @author Oliver Lea
+  */
+class Geo extends JFrame with Runnable {
+
+  import geo.Implicits.convertLambdaToAction
 
   val MAX_TICKS_PER_SECOND = 60
   val OPTIMAL_TICK_TIME: Double = 1000 / MAX_TICKS_PER_SECOND
+
+  private var currentScreen: Screen = new MainMenu(this)
+
+  private var am = currentScreen.getActionMap
+  private var running: Boolean = true
+
+  add(currentScreen)
+  am.put(KeyEvent.VK_ESCAPE, () => pause())
+
+  def pause() = {
+    running = !running
+  }
+
+  def screen_=(scr: Screen) = {
+    add(scr)
+    pack()
+    remove(currentScreen)
+    currentScreen = scr
+    am = currentScreen.getActionMap
+
+    am.put(KeyEvent.VK_ESCAPE, () => pause())
+  }
+
+  def screen = currentScreen
 
   override def run(): Unit = {
     def run(lastFpsTime: Long, lastFps: Long, lastTickStart: Long): Unit = {
@@ -28,16 +57,18 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
         fps = 0
       }
 
-      var delta: Double = updateLength / OPTIMAL_TICK_TIME
-      while (delta >= 1) {
-        SwingUtilities.invokeAndWait(new Runnable {
-          override def run(): Unit = geoPanel.tick(delta)
-        })
-        delta -= OPTIMAL_TICK_TIME
+      if (running) {
+        var delta: Double = updateLength / OPTIMAL_TICK_TIME
+        while (delta >= 1) {
+          SwingUtilities.invokeAndWait(new Runnable {
+            override def run(): Unit = currentScreen.tick(delta)
+          })
+          delta -= OPTIMAL_TICK_TIME
+        }
       }
 
       SwingUtilities.invokeAndWait(new Runnable {
-        override def run(): Unit = geoPanel.repaint()
+        override def run(): Unit = currentScreen.repaint()
       })
 
       val sleepTime = tickStart - Platform.currentTime + OPTIMAL_TICK_TIME.toInt
@@ -45,8 +76,7 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
         Thread sleep sleepTime
       }
 
-      var running = true
-      if (running) run(fpsTime, fps, tickStart)
+      run(fpsTime, fps, tickStart)
     }
     val currentTime = Platform.currentTime
     run(Platform.currentTime, 0, currentTime)
@@ -54,14 +84,13 @@ class Geo(geoPanel: GeoPanel) extends JFrame with Runnable {
 }
 
 object Geo {
+  val DEBUG = false
 
   def main(args: Array[String]): Unit = {
     SwingUtilities.invokeLater(new Runnable {
       override def run(): Unit = {
-        val geoPanel = new GeoPanel
-        val geo = new Geo(geoPanel)
+        val geo = new Geo
         geo.setMinimumSize(new Dimension(800, 600))
-        geo.add(geoPanel)
         geo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
         geo.setVisible(true)
         new Thread(geo).start()
